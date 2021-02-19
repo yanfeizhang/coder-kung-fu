@@ -4,6 +4,7 @@
  * Socket服务端
  */
 
+ini_set('memory_limit','512M')
 set_time_limit(0);
 
 if(!isset($argv[1]) || !isset($argv[2])){
