@@ -16,9 +16,9 @@ $sockets = array();
 function buildConnect($sIp,$sPort,$num){
     global $sockets;
 
-    for($i=0;$i<$num;$i++){
-        if(0==$i%1000){
-            echo $i."\n";
+    for($i = 1; $i <= $num; $i++){
+        if(0 == $i % 1000){
+            echo " 连接 ".$sIp.":".$sPort." 成功了 ".$i." 条\n";
             sleep(1); 
         }
         
