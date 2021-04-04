@@ -26,7 +26,8 @@
 - [漫画 | 理解了TCP连接的实现以后，客户端的并发也爆发了！](https://mp.weixin.qq.com/s/ta6upubg0o1w03YGUo8Trg)  
 - [百看不如一练，动手测试单机百万连接的保姆级教程！](https://mp.weixin.qq.com/s/f_CMt2ni0vegB3-pf2BTTg)  <font color="#dd0000">(:cn:新)</font>
 
-
+**1.5 电子书** 
+- [开发内功修炼网络篇电子书出炉！！！](https://mp.weixin.qq.com/s/kE8y9em9a0Xv80YaQqPbRg)  <font color="#dd0000">(:cn:新)</font>  
 
 ## 二、硬盘篇
 **2.1 硬件工作原理**
@@ -86,4 +87,6 @@
 
 ## 五、应用篇
 - [峰值 QPS 50 万 +，性能优异的网络框架开源力作 Sogou Workflow！](https://mp.weixin.qq.com/s/clILKrOO7_XJs6uHp5hoUw) <font color="#dd0000">(:cn:新)</font>
-
+  
+**公众号二维码**：微信扫一扫关注！  
+![avatar](imgs/official_accounts.jpg)
