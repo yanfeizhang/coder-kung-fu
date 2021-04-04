@@ -88,5 +88,6 @@
 ## 五、应用篇
 - [峰值 QPS 50 万 +，性能优异的网络框架开源力作 Sogou Workflow！](https://mp.weixin.qq.com/s/clILKrOO7_XJs6uHp5hoUw) <font color="#dd0000">(:cn:新)</font>
   
-**公众号二维码**：微信扫一扫关注！  
+## 六、公众号二维码
+**微信扫一扫关注！**   
 ![avatar](imgs/official_accounts.jpg)
