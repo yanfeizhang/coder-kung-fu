@@ -8,8 +8,9 @@
 持续更新ing...  
 
 ## 一、网络篇
-**1.1 内核收包原理**
+**1.1 内核收发包原理**
 - [图解Linux网络包接收过程](https://mp.weixin.qq.com/s/GoYDsfy9m0wRoXi_NCfCmg)
+- [25 张图，一万字，拆解 Linux 网络包发送过程](https://mp.weixin.qq.com/s/wThfD9th9e_-YGHJJ3HXNQ) <font color="#dd0000">(:cn:新)</font>
 - [Linux网络包接收过程的监控与调优](https://mp.weixin.qq.com/s/6iQ-OhEbQJbEcgi9kakSjg)
 - [图解 | 深入理解高性能网络开发路上的绊脚石 - 同步阻塞网络 IO](https://mp.weixin.qq.com/s/cIcw0S-Q8pBl1-WYN0UwnA) <font color="#dd0000">(:cn:新)</font>
 - [图解 | 深入揭秘 epoll 是如何实现 IO 多路复用的！](https://mp.weixin.qq.com/s/OmRdUgO1guMX76EdZn11UQ) <font color="#dd0000">(:cn:新)</font>
