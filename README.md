@@ -11,24 +11,27 @@
 **1.1 内核收发包原理**
 - [图解Linux网络包接收过程](https://mp.weixin.qq.com/s/GoYDsfy9m0wRoXi_NCfCmg)
 - [25 张图，一万字，拆解 Linux 网络包发送过程](https://mp.weixin.qq.com/s/wThfD9th9e_-YGHJJ3HXNQ) <font color="#dd0000">(:cn:新)</font>
+- [127.0.0.1 之本机网络通信过程知多少 ?！](https://mp.weixin.qq.com/s/6_OfoeD3ZpyQisY2F-4_bw) <font color="#dd0000">(:cn:新)</font> 
 - [Linux网络包接收过程的监控与调优](https://mp.weixin.qq.com/s/6iQ-OhEbQJbEcgi9kakSjg)
+
+**1.2 内核如何与用户进程协作**
 - [图解 | 深入理解高性能网络开发路上的绊脚石 - 同步阻塞网络 IO](https://mp.weixin.qq.com/s/cIcw0S-Q8pBl1-WYN0UwnA) <font color="#dd0000">(:cn:新)</font>
 - [图解 | 深入揭秘 epoll 是如何实现 IO 多路复用的！](https://mp.weixin.qq.com/s/OmRdUgO1guMX76EdZn11UQ) <font color="#dd0000">(:cn:新)</font>
 - [漫画 | 看进程小 P 讲述它的网络性能故事！](https://mp.weixin.qq.com/s/r7EDYsvVhWA2fv52mwM_zg)  <font color="#dd0000">(:cn:新)</font>  
 
-**1.2 TCP连接时间开销**
+**1.3 TCP连接时间开销**
 - [聊聊TCP连接耗时的那些事儿](https://mp.weixin.qq.com/s/wXyerOFoibRsaBmbl224gw)
 
-**1.3 TCP连接内存开销**
+**1.4 TCP连接内存开销**
 - [刨根问底儿，看我如何处理 Too many open files 错误！](https://mp.weixin.qq.com/s/GBn94vdL4xUL80WYrGdUWQ) <font color="#dd0000">(:cn:新)</font>
 - [漫画 | 花了七天时间测试，我彻底搞明白了 TCP 的这些内存开销!](https://mp.weixin.qq.com/s/BwddYkVLSYlkKFNeA-NUVg)  
 
-**1.4 单机百万并发系列**
+**1.5 单机百万并发系列**
 - [漫画 | 一台Linux服务器最多能支撑多少个TCP连接](https://mp.weixin.qq.com/s/Lkyj42NtvqEj63DoCY5btQ)  
 - [漫画 | 理解了TCP连接的实现以后，客户端的并发也爆发了！](https://mp.weixin.qq.com/s/ta6upubg0o1w03YGUo8Trg)  
 - [百看不如一练，动手测试单机百万连接的保姆级教程！](https://mp.weixin.qq.com/s/f_CMt2ni0vegB3-pf2BTTg)  <font color="#dd0000">(:cn:新)</font>
 
-**1.5 电子书** 
+**1.6 电子书** 
 - [开发内功修炼网络篇电子书出炉！！！](https://mp.weixin.qq.com/s/kE8y9em9a0Xv80YaQqPbRg)  <font color="#dd0000">(:cn:新)</font>  
 
 ## 二、硬盘篇
