@@ -20,7 +20,8 @@
 - [漫画 | 看进程小 P 讲述它的网络性能故事！](https://mp.weixin.qq.com/s/r7EDYsvVhWA2fv52mwM_zg)  <font color="#dd0000">(:cn:新)</font>  
 
 **1.3 TCP之三次握手**
-- [TCP连接中客户端的端口号是如何确定的？](https://mp.weixin.qq.com/s/C-Eeoeh9GHxugF4J30fz1A)
+- [为什么服务端程序都需要先 listen 一下？](https://mp.weixin.qq.com/s/hv2tmtVpxhVxr6X-RNWBsQ)  <font color="#dd0000">(:cn:新)</font> 
+- [TCP连接中客户端的端口号是如何确定的？](https://mp.weixin.qq.com/s/C-Eeoeh9GHxugF4J30fz1A)  <font color="#dd0000">(:cn:新)</font> 
 
 **1.4 TCP连接时间开销、内存开销**
 - [聊聊TCP连接耗时的那些事儿](https://mp.weixin.qq.com/s/wXyerOFoibRsaBmbl224gw)
