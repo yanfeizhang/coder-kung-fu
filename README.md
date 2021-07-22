@@ -22,6 +22,7 @@
 **1.3 TCP之三次握手**
 - [为什么服务端程序都需要先 listen 一下？](https://mp.weixin.qq.com/s/hv2tmtVpxhVxr6X-RNWBsQ)  <font color="#dd0000">(:cn:新)</font> 
 - [TCP连接中客户端的端口号是如何确定的？](https://mp.weixin.qq.com/s/C-Eeoeh9GHxugF4J30fz1A)  <font color="#dd0000">(:cn:新)</font> 
+- [能将三次握手理解到这个深度，面试官拍案叫绝！](https://mp.weixin.qq.com/s/vlrzGc5bFrPIr9a7HIr2eA)  <font color="#dd0000">(:cn:新)</font> 
 
 **1.4 TCP连接时间开销、内存开销**
 - [聊聊TCP连接耗时的那些事儿](https://mp.weixin.qq.com/s/wXyerOFoibRsaBmbl224gw)
