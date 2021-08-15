@@ -20,7 +20,7 @@ public class Server {
 
         try {
             ServerSocket ss = new ServerSocket();
-            ss.bind(new InetSocketAddress(sIp, sPort));
+            ss.bind(new InetSocketAddress(sIp, sPort), 1024);
             System.out.println("启动Server " + sIp + ":" + sPort + "...");
 
             int i = 0;
