@@ -27,7 +27,7 @@
 
 **1.4 TCP连接时间开销、内存开销**
 - [聊聊TCP连接耗时的那些事儿](https://mp.weixin.qq.com/s/wXyerOFoibRsaBmbl224gw)
-- [刨根问底儿，看我如何处理 Too many open files 错误！](https://mp.weixin.qq.com/s/GBn94vdL4xUL80WYrGdUWQ) <font color="#dd0000">(:cn:新)</font>
+- [刨根问底儿，看我如何处理 Too many open files 错误！](https://mp.weixin.qq.com/s/GBn94vdL4xUL80WYrGdUWQ)、
 - [漫画 | 花了七天时间测试，我彻底搞明白了 TCP 的这些内存开销!](https://mp.weixin.qq.com/s/BwddYkVLSYlkKFNeA-NUVg)  
 
 **1.5 单机百万并发系列**
@@ -35,8 +35,11 @@
 - [漫画 | 理解了TCP连接的实现以后，客户端的并发也爆发了！](https://mp.weixin.qq.com/s/ta6upubg0o1w03YGUo8Trg)  
 - [百看不如一练，动手测试单机百万连接的保姆级教程！](https://mp.weixin.qq.com/s/f_CMt2ni0vegB3-pf2BTTg) 
 
-**1.6 电子书** 
-- [开发内功修炼网络篇电子书出炉！！！](https://mp.weixin.qq.com/s/kE8y9em9a0Xv80YaQqPbRg)  <font color="#dd0000">(:cn:新)</font>  
+**1.6 网络工具**
+- [用户态 tcpdump 如何实现抓到内核网络包的?](https://mp.weixin.qq.com/s/ZX8Jluh-RgJXcVh3OvycRQ)  <font color="#dd0000">(:cn:新)</font>  
+
+**1.7 电子书** 
+- [开发内功修炼网络篇电子书出炉！！！](https://mp.weixin.qq.com/s/kE8y9em9a0Xv80YaQqPbRg)  <font color="#dd0000">(:cn:🔥)</font>  
 
 ## 二、硬盘篇
 **2.1 硬件工作原理**
