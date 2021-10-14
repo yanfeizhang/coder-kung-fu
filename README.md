@@ -41,6 +41,7 @@
 
 **1.7 虚拟化**
 - [轻松理解 Docker 网络虚拟化基础之 veth 设备！](https://mp.weixin.qq.com/s/sSQFINJ8RO8Nc4XtcyQIjQ)  <font color="#dd0000">(:cn:新)</font> 
+- [聊聊 Linux 上软件实现的“交换机” - Bridge！](https://mp.weixin.qq.com/s/JnKz1fUgZmGdvfxOm2ehZg)  [配套实验源码](/tests/network/test05/) <font color="#dd0000">(:cn:新)</font> 
 
 **1.8 电子书** 
 - [🔥开发内功修炼网络篇电子书出炉！！！](https://mp.weixin.qq.com/s/kE8y9em9a0Xv80YaQqPbRg)
@@ -103,7 +104,11 @@
 
 ## 五、应用篇
 - [峰值 QPS 50 万 +，性能优异的网络框架开源力作 Sogou Workflow！](https://mp.weixin.qq.com/s/clILKrOO7_XJs6uHp5hoUw) <font color="#dd0000">(:cn:新)</font>
+
+## 六、答读者问
+- [今天聊聊飞哥是怎么阅读内核源码的](https://mp.weixin.qq.com/s/-WA6J9BZeZJIQTZtDHD5hA)  <font color="#dd0000">(:cn:新)</font>
+- [答读者问，飞哥能否给推荐几本硬核技术书？](https://mp.weixin.qq.com/s/OQyGEi0rvJRS0HJstaPWKQ)  <font color="#dd0000">(:cn:新)</font>
   
-## 六、公众号二维码
+## 七、公众号二维码
 **微信扫一扫关注！**   
 ![avatar](imgs/official_accounts.jpg)
