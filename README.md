@@ -41,8 +41,8 @@
 
 **1.7 虚拟化**
 - [轻松理解 Docker 网络虚拟化基础之 veth 设备！](https://mp.weixin.qq.com/s/sSQFINJ8RO8Nc4XtcyQIjQ)  <font color="#dd0000">(:cn:新)</font> 
-- [聊聊 Linux 上软件实现的“交换机” - Bridge！](https://mp.weixin.qq.com/s/JnKz1fUgZmGdvfxOm2ehZg)  [配套实验源码](/tests/network/test05/) <font color="#dd0000">(:cn:新)</font> 
-- [彻底弄懂 Linux 网络命名空间](https://mp.weixin.qq.com/s/lscMpc5BWAEzjgYw6H0wBw) [配套实验源码](/tests/network/test06/) <font color="#dd0000">(:cn:新)</font> 
+- [聊聊 Linux 上软件实现的“交换机” - Bridge！](https://mp.weixin.qq.com/s/JnKz1fUgZmGdvfxOm2ehZg)&nbsp;&nbsp;[配套实验源码](/tests/network/test05/) <font color="#dd0000">(:cn:新)</font> 
+- [彻底弄懂 Linux 网络命名空间](https://mp.weixin.qq.com/s/lscMpc5BWAEzjgYw6H0wBw)&nbsp;&nbsp;[配套实验源码](/tests/network/test06/) <font color="#dd0000">(:cn:新)</font> 
 
 **1.8 电子书** 
 - [🔥开发内功修炼网络篇电子书出炉！！！](https://mp.weixin.qq.com/s/kE8y9em9a0Xv80YaQqPbRg)
