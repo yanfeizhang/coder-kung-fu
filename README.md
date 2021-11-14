@@ -47,7 +47,9 @@
 **1.8 电子书** 
 - [🔥开发内功修炼网络篇电子书出炉！！！](https://mp.weixin.qq.com/s/kE8y9em9a0Xv80YaQqPbRg)
 
-## 二、硬盘篇
+## 二、硬盘篇  
+- [经典，Linux文件系统十问](https://mp.weixin.qq.com/s/pOKjwl3ONPMPSRF6RSmvaw)
+
 **2.1 硬件工作原理**
 - [磁盘开篇：扒开机械硬盘坚硬的外衣！](https://mp.weixin.qq.com/s/OqhwSI4WsEyZlBhkFGPUlg)
 - [磁盘分区也是隐含了技术技巧的](https://mp.weixin.qq.com/s/4HwUxy-4FClgIIei6JAzqw)
