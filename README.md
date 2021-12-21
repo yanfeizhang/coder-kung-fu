@@ -11,8 +11,9 @@
 **1.1 内核收发包原理**
 - [🔥图解Linux网络包接收过程](https://mp.weixin.qq.com/s/GoYDsfy9m0wRoXi_NCfCmg)
 - [🔥25 张图，一万字，拆解 Linux 网络包发送过程](https://mp.weixin.qq.com/s/wThfD9th9e_-YGHJJ3HXNQ) 
-- [🔥127.0.0.1 之本机网络通信过程知多少 ?！](https://mp.weixin.qq.com/s/6_OfoeD3ZpyQisY2F-4_bw)  
 - [Linux网络包接收过程的监控与调优](https://mp.weixin.qq.com/s/6iQ-OhEbQJbEcgi9kakSjg)
+- [🔥127.0.0.1 之本机网络通信过程知多少 ?！](https://mp.weixin.qq.com/s/6_OfoeD3ZpyQisY2F-4_bw)  
+- [本机网络 IO 之 Unix Domain Socket](https://mp.weixin.qq.com/s/fHzKYlW0WMhP2jxh2H_59A) &nbsp;&nbsp;[实验使用源码](https://github.com/rigtorp/ipc-bench)
 
 **1.2 内核如何与用户进程协作**
 - [图解 | 深入理解高性能网络开发路上的绊脚石 - 同步阻塞网络 IO](https://mp.weixin.qq.com/s/cIcw0S-Q8pBl1-WYN0UwnA) 
@@ -112,6 +113,10 @@
 ## 六、答读者问
 - [今天聊聊飞哥是怎么阅读内核源码的](https://mp.weixin.qq.com/s/-WA6J9BZeZJIQTZtDHD5hA)  <font color="#dd0000">(:cn:新)</font>
 - [答读者问，飞哥能否给推荐几本硬核技术书？](https://mp.weixin.qq.com/s/OQyGEi0rvJRS0HJstaPWKQ)  <font color="#dd0000">(:cn:新)</font>
+- [程序员完全没有时间提升自己该怎么办？](https://mp.weixin.qq.com/s/5f7x60bNCNK2a5nz8FL5yg)
+- [写给内功修炼读者的一封信!](https://mp.weixin.qq.com/s/Pzo46nZtSlsv_M6Tq7pv_A)
+- [我是怎么样写出开发内功修炼的？秘密都在这里！](https://mp.weixin.qq.com/s/rUWqVtoP3_f0M6ltN_1gqA)
+- [给想成长为高级别开发同学的七条建议](https://mp.weixin.qq.com/s/8lMGzBzXine-NAsqEaIE4g)
   
 ## 七、公众号二维码
 **微信扫一扫关注！**   
