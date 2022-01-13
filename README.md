@@ -46,6 +46,7 @@
 - [彻底弄懂 Linux 网络命名空间](https://mp.weixin.qq.com/s/lscMpc5BWAEzjgYw6H0wBw)&nbsp;&nbsp;[配套实验源码](/tests/network/test06/) <font color="#dd0000">(:cn:新)</font> 
 - [手工模拟实现 Docker 容器网络！](https://mp.weixin.qq.com/s/Arcz3RWe_o0Ijw6uPWKdVw)&nbsp;&nbsp;[配套实验源码](/tests/network/test07/) <font color="#dd0000">(:cn:新)</font>
 - [理解 iptables 原理](https://mp.weixin.qq.com/s/O084fYzUFk7jAzJ2DDeADg)
+- [天天讲路由，那 Linux 路由到底咋实现的！？](https://mp.weixin.qq.com/s/UHYE6vwMffaAb-o5eNMrDg)
 
 **1.8 电子书** 
 - [🔥开发内功修炼网络篇电子书出炉！！！](https://mp.weixin.qq.com/s/kE8y9em9a0Xv80YaQqPbRg)
