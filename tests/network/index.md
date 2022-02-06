@@ -6,3 +6,4 @@
 - [用 bridge 连接本机上的多组 veth，使其可以互相通信](tests/network/test05)
 - [命令行使用 namespace 的简单实验](tests/network/test06)
 - [手工模拟实现一个可以和外部通信的容器网络](tests/network/test07)
+- [socket端口复用SO_REUSEPORT测试](tests/network/test08)
