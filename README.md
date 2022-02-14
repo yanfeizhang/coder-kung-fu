@@ -3,9 +3,9 @@
 
 我们所有的开发同学每时每刻都在使用内核、都在使用硬件。所以能正确理解内核是怎么工作的、硬件的性能指标大概是多少，这些对于高阶的开发工程师来说非常重要。想成为技术大牛，扎实练习内功是必经之路！  
 
-飞哥的开发内功修炼从CPU、内存、磁盘、网络四大模块进行深度思考，总结出来，在这里分享给积极上进的你！  
+飞哥的开发内功修炼从CPU、内存、磁盘、网络四大模块进行深度思考，总结出来，在这里分享给积极上进的你！欢迎添加飞哥微信交流与围观朋友圈: zhangyanfei748527  
 
-持续更新ing...  
+本 repo 持续更新ing...  
 
 ## 一、网络篇
 **1.1 内核收发包原理**
@@ -21,7 +21,9 @@
 - [漫画 | 看进程小 P 讲述它的网络性能故事！](https://mp.weixin.qq.com/s/r7EDYsvVhWA2fv52mwM_zg) 
 
 **1.3 TCP之三次握手**
-- [为什么服务端程序都需要先 listen 一下？](https://mp.weixin.qq.com/s/hv2tmtVpxhVxr6X-RNWBsQ)  
+- [为什么服务端程序都需要先 listen 一下？](https://mp.weixin.qq.com/s/hv2tmtVpxhVxr6X-RNWBsQ)
+- [深入理解Linux端口重用这一特性](https://mp.weixin.qq.com/s/SYCUMvzktgeGbyAfRdqhmg) &nbsp;&nbsp;[配套实验源码](https://github.com/yanfeizhang/coder-kung-fu/blob/main/tests/network/test08/server.c)
+- [绑定特殊 IP 之 0.0.0.0 的内部工作原理](https://mp.weixin.qq.com/s/IOs39stus5C2K6RQFc5CQQ)
 - [TCP连接中客户端的端口号是如何确定的？](https://mp.weixin.qq.com/s/C-Eeoeh9GHxugF4J30fz1A)
 - [能将三次握手理解到这个深度，面试官拍案叫绝！](https://mp.weixin.qq.com/s/vlrzGc5bFrPIr9a7HIr2eA)  
 - [深入解析常见三次握手异常](https://mp.weixin.qq.com/s/7Cum6Y28H_gXLyrRFrthNw) 
