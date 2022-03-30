@@ -120,8 +120,12 @@
 - [协程究竟比线程牛在什么地方？](https://mp.weixin.qq.com/s/N4W0-0cP1wlxtLILx3oXpg)
 - [函数调用太多了会有性能问题吗？](https://mp.weixin.qq.com/s/G30VtOIYjx2Wa54xlO7udw)
 
+**4.4 CPU性能优化**
+- [一个likely的简单使用，背后却是对CPU工作原理的深刻理解](https://mp.weixin.qq.com/s/2YJVAEanfjSYgmZh8GRNrg) <font color="#dd0000">(:cn:新)</font>
+
+
 ## 五、应用篇
-- [峰值 QPS 50 万 +，性能优异的网络框架开源力作 Sogou Workflow！](https://mp.weixin.qq.com/s/clILKrOO7_XJs6uHp5hoUw) <font color="#dd0000">(:cn:新)</font>
+- [峰值 QPS 50 万 +，性能优异的网络框架开源力作 Sogou Workflow！](https://mp.weixin.qq.com/s/clILKrOO7_XJs6uHp5hoUw)
 
 ## 六、答读者问
 - [今天聊聊飞哥是怎么阅读内核源码的](https://mp.weixin.qq.com/s/-WA6J9BZeZJIQTZtDHD5hA)  <font color="#dd0000">(:cn:新)</font>
