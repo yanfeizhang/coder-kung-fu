@@ -10,7 +10,7 @@
 double data[MAXELEMS];      // 测试用的全局内存数组
 
 void init_data(double *data, int n);
-void run_delay_testing();
+void run_width_testing();
 double get_seque_access_result(int size, int stride, int type);
 double get_random_access_result(int size, int type);
 void seque_access(int elems, int stride);
@@ -20,9 +20,9 @@ void create_rand_array(int max, int count, int* pArr);
 int main()
 {		
 	init_data(data, MAXELEMS); 	
-	
-	printf("Delay  (ns)\n");	
-	run_delay_testing();
+		
+	printf("Band Width (MB/sec)\n");
+	run_width_testing();
 	printf("\n\n");
 	
 	exit(0);
@@ -32,14 +32,14 @@ int main()
 void init_data(double *data, int n)
 {
 	int i;
+
 	for (i = 0; i < n; i++)
-	{
-		data[i] = i;
-	}
+	data[i] = i;
 }
 
-// 运行内存访问延时测试
-void run_delay_testing(){	
+// 运行内存访问带宽测试
+void run_width_testing()
+{
 	int size;        // 测试内存区域大小 
 	int stride;      // 内存区域访问循环步长
 	
@@ -54,21 +54,21 @@ void run_delay_testing(){
 	}
 	printf("\n");	
 
-	// 多次实验，进行内存顺序访问延时评估
+	// 多次实验，进行内存顺序访问带宽评估
 	// 外层循环控制步长依次从 1 到 64，目的是不同的顺序步长的访问效果差异
 	// 内存循环控制数据大小依次从 2KB 开始到 64MB，目的是要保证数据大小依次超过 L1、L2、L3
 	for (stride = 1; stride <= MAXSTRIDE; stride=stride+1) {
 		printf("s%d\t", stride);		
 		for (size = MAXBYTES; size >= MINBYTES; size >>= 1) {	
-			printf("%.2f\t", get_seque_access_result(size, stride, 1));
+			printf("%.1f\t", get_seque_access_result(size, stride, 0));
 		}
 		printf("\n");
 	}
 	
-	// 多次实验，进行内存随机访问延时评估
-	printf("\random\t");
+	// 多次实验，进行内存随机访问带宽评估
+	printf("random\t");
 	for (size = MAXBYTES; size >= MINBYTES; size >>= 1) {		
-		printf("%.2f\t", get_random_access_result(size,1));
+		printf("%.1f\t", get_random_access_result(size,0));
 	}
 	printf("\n");
 }
@@ -104,17 +104,19 @@ double get_seque_access_result(int size, int stride, int type)
 
 	//本次实验所读取的总存储读取大小
 	total_accessed_bytes = operations * sizeof(double);
+
 	
 	double result = 0;
 	// 获取带宽结果
-	if(0==type){ 
+	if(0==type){ /* get width */
+	
 		/* width 	= size(M)/ time(s) 
 					= (total_accessed_bytes / 1000000) / (used / 1000000000) 
 					= total_accessed_bytes*1000/used_microseconds;
 		*/	
 		result = total_accessed_bytes * 1000  / used_microseconds;
 	// 获取延迟测试结果	
-	}else if(1==type){
+	}else if(1==type){/* get cycles_per_operation */		
 		result = (double)used_microseconds/operations; 
 	}	
 	
@@ -135,6 +137,7 @@ void seque_access(int elems, int stride) /* The test function */
 	//这一行是为了避免编译器把循环给优化掉了
 	sink = result;
 }
+
 
 // get_random_access_result 对存储进行随机访问测试(L1/L2/L3,内存)
 // 参数说明
@@ -160,7 +163,8 @@ double get_random_access_result(int size, int type)
 		*p = 0;
 	}	
 	create_rand_array(elems, access_count, random_access_arr);	
-			
+	
+		
 	//开始进行随机访问测试，运行 300 次，以降低实验误差
 	start_timer();
 	for(i=0; i<samples; i++){
@@ -169,13 +173,13 @@ double get_random_access_result(int size, int type)
 	used_microseconds = get_timer();
 	
 	//本次实验所进行的总存储读取次数
-	operations = (long int)samples * (long int)access_count;	
+	operations = (long int)samples * (long int)access_count;
 
-	//本次实验所读取的总存储读取大小
+	//本次实验所读取的总存储读取大小	
 	total_accessed_bytes = operations * sizeof(double);
 
 	
-	double result = 0;;
+	double result = 0;
 	// 获取带宽结果
 	if(0==type){
 	
@@ -185,7 +189,7 @@ double get_random_access_result(int size, int type)
 		*/	
 		result = total_accessed_bytes * 1000  / used_microseconds;
 	// 获取延时结果	
-	}else if(1==type){		
+	}else if(1==type){	
 		result = used_microseconds/operations*2.4; 
 	}	
 	
@@ -218,5 +222,6 @@ void random_access(int* random_index_arr, int count) /* The test function */
 	//这一行是为了避免编译器把循环给优化掉了
 	sink = result; 
 }
+
 
 

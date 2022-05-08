@@ -5,6 +5,10 @@
 ## 磁盘相关实验
 - [使用fio磁盘压测工具进行性能压测分析](tests/disk/test01)
 
+## 内存相关实验
+- [内存访问延时测试](tests/memory/test01)
+- [内存访问带宽测试](tests/memory/test02)
+
 ## 网络相关实验
 - [PHP单语言的百万连接测试源码](tests/network/test01)
 - [通过多 IP 达成单机百万连接（支持c、java、php三种语言）](tests/network/test02)
