@@ -1,6 +1,10 @@
 
 ## CPU相关实验
 - [likely 和 unlikely 汇编结果对比](tests/cpu/test01)
+- [read 系统调用开销](tests/cpu/test02)
+- [read 进程上下文切换开销](tests/cpu/test03)
+- [read 协程上下文切换开销](tests/cpu/test04)
+- [read 线程上下文切换开销](tests/cpu/test05)
 
 ## 磁盘相关实验
 - [使用fio磁盘压测工具进行性能压测分析](tests/disk/test01)
