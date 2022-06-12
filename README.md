@@ -6,9 +6,15 @@
 本 repo 持续更新ing...  
 
 ---
-为了方便大家阅读，本 Github 的网络篇核心内容整理成了 PDF 电子书，也即将出版。该书好评众多，欢迎大家下载！ [**百度网盘地址**](https://pan.baidu.com/s/11u6z26xnRNlIOSQ4ohzNuA) 密码:q79d
 
-如若网盘地址出问题，也可以通过微信（zhangyanfei748527）找飞哥，我直接发你！ 
+大家好，飞哥在博客文章的基础上出版了一本书，名字叫做《深入理解Linux网络》。该书市场接受度非常的高，在首发当天就斩获了京东科技类图书的第一名，几天就将首印卖断了货。
+
+![avatar](imgs/book.png)  
+
+点击：[京东购买地址](https://union-click.jd.com/jdc?e=618%7Cpc%7C&p=JF8BANcJK1olXwcFV19UDkoTC18IGVsTWAIFUG4ZVxNJXF9RXh5UHw0cSgYYXBcIWDoXSQVJQwYAVFhYDEwTHDZNRwYlCF1nABo_UA50SxVoUidML2RaNEQUeEcbM244GFoWVQIBV11UDnsnA2g4STXN67Da8e9B3OGY1uefK1olXQEGUVdYD04VBmsMGWsSXQ8yHQYCXglTVDtXK2slXjYFVFdJDjlWUXsOaWslXTYBZBwzCB4XVmYBGl9HWFNXUVYJDEMWAGcAT1kQXA8DXV5ZAEsnAW4JH1IlbQ)
+
+另外大家也可以加飞哥微信（zhangyanfei748527）进读者交流群。
+
 
 **敬请扫码关注微信公众号「开发内功修炼」，及时获得最新硬核文章！**   
 ![avatar](imgs/official_accounts.jpg)   
@@ -142,3 +148,8 @@
 ## 七、公众号二维码
 **微信扫一扫关注！**   
 ![avatar](imgs/official_accounts.jpg)
+
+--- 
+为了方便大家阅读，本 Github 的网络篇核心内容整理成了 PDF 电子书，也即将出版。该书好评众多，欢迎大家下载！ [**百度网盘地址**](https://pan.baidu.com/s/11u6z26xnRNlIOSQ4ohzNuA) 密码:q79d
+
+如若网盘地址出问题，也可以通过微信（zhangyanfei748527）找飞哥，我直接发你！ 
