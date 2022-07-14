@@ -37,6 +37,7 @@
 - [万字多图，搞懂 Nginx 高性能网络工作原理！](https://mp.weixin.qq.com/s/AX6Fval8RwkgzptdjlU5kg)  <font color="#dd0000">(:cn:新)</font> 
 - [单线程 Redis 如何做到每秒数万 QPS 的超高处理能力！](https://mp.weixin.qq.com/s/2y60cxUjaaE2pWSdCBX1lA)
 - [Redis 6 中的多线程实现方式比我预期的要差](https://mp.weixin.qq.com/s/MU8cxoKS3rU9mN_CY3WxWQ)  <font color="#dd0000">(:cn:新)</font>
+- [剖析Netty内部网络实现原理](https://mp.weixin.qq.com/s/DS52g3bibU9kNH75UFxGqA)  <font color="#dd0000">(:cn:新)</font>
 
 **1.3 TCP之三次握手**
 - [为什么服务端程序都需要先 listen 一下？](https://mp.weixin.qq.com/s/hv2tmtVpxhVxr6X-RNWBsQ)
