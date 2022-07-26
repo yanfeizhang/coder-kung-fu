@@ -16,9 +16,6 @@
 另外大家也可以加飞哥微信（zhangyanfei748527）进读者交流群。
 
 
-**敬请扫码关注微信公众号「开发内功修炼」，及时获得最新硬核文章！**   
-![avatar](imgs/official_accounts.jpg)   
-
 ---
 
 ## 一、网络篇
@@ -147,8 +144,9 @@
 - [给想成长为高级别开发同学的七条建议](https://mp.weixin.qq.com/s/8lMGzBzXine-NAsqEaIE4g)
   
 ## 七、公众号二维码
-**微信扫一扫关注！**   
-![avatar](imgs/official_accounts.jpg)
+
+**敬请扫码关注微信公众号「开发内功修炼」，及时获得最新硬核文章！**   
+![avatar](imgs/official_accounts.jpg)   
 
 --- 
 为了方便大家阅读，本 Github 的网络篇核心内容整理成了 PDF 电子书，也即将出版。该书好评众多，欢迎大家下载！ [**百度网盘地址**](https://pan.baidu.com/s/11u6z26xnRNlIOSQ4ohzNuA) 密码:q79d
