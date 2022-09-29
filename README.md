@@ -131,6 +131,9 @@
 **4.4 CPU性能优化**
 - [一个likely的简单使用，背后却是对CPU工作原理的深刻理解](https://mp.weixin.qq.com/s/2YJVAEanfjSYgmZh8GRNrg) <font color="#dd0000">(:cn:新)</font>
 
+**4.5 进程管理**
+- [Linux进程是如何创建出来的？](https://mp.weixin.qq.com/s/ftrSkVvOr6s5t0h4oq4I2w)
+
 
 ## 五、应用篇
 - [峰值 QPS 50 万 +，性能优异的网络框架开源力作 Sogou Workflow！](https://mp.weixin.qq.com/s/clILKrOO7_XJs6uHp5hoUw)
