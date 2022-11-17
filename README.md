@@ -17,6 +17,11 @@
 
 
 ---
+**新文置顶**  
+- [Linux进程是如何创建出来的？](https://mp.weixin.qq.com/s/ftrSkVvOr6s5t0h4oq4I2w)  <font color="#dd0000">(:cn:新)</font> 
+- [聊聊Linux中线程和进程的联系与区别！](https://mp.weixin.qq.com/s/--S94B3RswMdBKBh6uxt0w)  <font color="#dd0000">(:cn:新)</font> 
+- [你的新进程是如何被内核调度执行到的？](https://mp.weixin.qq.com/s/y2axbQTzOGZweJn3LAhWvg)  <font color="#dd0000">(:cn:新)</font> 
+
 
 ## 一、网络篇
 **1.1 内核收发包原理**
@@ -134,6 +139,7 @@
 **4.5 进程管理**
 - [Linux进程是如何创建出来的？](https://mp.weixin.qq.com/s/ftrSkVvOr6s5t0h4oq4I2w)  <font color="#dd0000">(:cn:新)</font> 
 - [聊聊Linux中线程和进程的联系与区别！](https://mp.weixin.qq.com/s/--S94B3RswMdBKBh6uxt0w)  <font color="#dd0000">(:cn:新)</font> 
+- [你的新进程是如何被内核调度执行到的？](https://mp.weixin.qq.com/s/y2axbQTzOGZweJn3LAhWvg)  <font color="#dd0000">(:cn:新)</font> 
 
 
 ## 五、应用篇
