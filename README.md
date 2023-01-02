@@ -17,11 +17,10 @@
 
 
 ---
-**新文置顶**  
-- [Linux进程是如何创建出来的？](https://mp.weixin.qq.com/s/ftrSkVvOr6s5t0h4oq4I2w)  <font color="#dd0000">(:cn:新)</font> 
-- [你写的代码是如何跑起来的？](https://mp.weixin.qq.com/s/1bdktqYF7VyAMadRlcRrSg)  <font color="#dd0000">(:cn:新)</font> 
+**新文置顶:最近写的都是CPU、进程方向的**  
 - [聊聊Linux中线程和进程的联系与区别！](https://mp.weixin.qq.com/s/--S94B3RswMdBKBh6uxt0w)  <font color="#dd0000">(:cn:新)</font> 
 - [你的新进程是如何被内核调度执行到的？](https://mp.weixin.qq.com/s/y2axbQTzOGZweJn3LAhWvg)  <font color="#dd0000">(:cn:新)</font> 
+- [Docker容器里进程的 pid 是如何申请出来的？](https://mp.weixin.qq.com/s/LDu6s1eZw6_xEwfa6pMM-A) <font color="#dd0000">(:cn:新)</font> 
 
 
 ## 一、网络篇
@@ -136,12 +135,15 @@
 
 **4.4 CPU性能优化**
 - [一个likely的简单使用，背后却是对CPU工作原理的深刻理解](https://mp.weixin.qq.com/s/2YJVAEanfjSYgmZh8GRNrg) <font color="#dd0000">(:cn:新)</font>
-
 **4.5 进程管理**
 - [Linux进程是如何创建出来的？](https://mp.weixin.qq.com/s/ftrSkVvOr6s5t0h4oq4I2w)  <font color="#dd0000">(:cn:新)</font> 
 - [你写的代码是如何跑起来的？](https://mp.weixin.qq.com/s/1bdktqYF7VyAMadRlcRrSg)  <font color="#dd0000">(:cn:新)</font> 
 - [聊聊Linux中线程和进程的联系与区别！](https://mp.weixin.qq.com/s/--S94B3RswMdBKBh6uxt0w)  <font color="#dd0000">(:cn:新)</font> 
 - [你的新进程是如何被内核调度执行到的？](https://mp.weixin.qq.com/s/y2axbQTzOGZweJn3LAhWvg)  <font color="#dd0000">(:cn:新)</font> 
+
+**4.6 容器进程管理**
+- [一次限制进程的 CPU 用量的实操过程](https://mp.weixin.qq.com/s/WQXURUChn8AZW17_Bi5plg)
+- [Docker容器里进程的 pid 是如何申请出来的？](https://mp.weixin.qq.com/s/LDu6s1eZw6_xEwfa6pMM-A) <font color="#dd0000">(:cn:新)</font> 
 
 
 ## 五、应用篇
