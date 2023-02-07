@@ -18,10 +18,9 @@
 
 ---
 **新文置顶:最近写的都是CPU、进程方向的**  
+- [从进程栈内存底层原理到Segmentation fault报错](https://mp.weixin.qq.com/s/pTP7ELOm4-JsAl1o_nyS-Q) <font color="#dd0000">(:cn:新)</font> 
 - [Linux 中的负载高低和 CPU 开销并不完全对应](https://mp.weixin.qq.com/s/1Pl4tT_Nq-fEZrtRpILiig)  <font color="#dd0000">(:cn:新)</font> 
 - [Docker容器里进程的 pid 是如何申请出来的？](https://mp.weixin.qq.com/s/LDu6s1eZw6_xEwfa6pMM-A) <font color="#dd0000">(:cn:新)</font> 
-- [聊聊Linux中线程和进程的联系与区别！](https://mp.weixin.qq.com/s/--S94B3RswMdBKBh6uxt0w)  <font color="#dd0000">(:cn:新)</font> 
-- [你的新进程是如何被内核调度执行到的？](https://mp.weixin.qq.com/s/y2axbQTzOGZweJn3LAhWvg)  <font color="#dd0000">(:cn:新)</font> 
 
 
 ## 一、网络篇
@@ -106,6 +105,8 @@
 **3.2 内核内存管理**
 - [说出来你可能不信，内核这家伙在内存的使用上给自己开了个小灶！](https://mp.weixin.qq.com/s/OR2XB4J76haGc1THeq7WQg) 
 - [明明还有大量内存，为啥报错“无法分配内存”？](https://mp.weixin.qq.com/s/Jo8KEzfb1OXShrb3PT4U_A) <font color="#dd0000">(:cn:新)</font>  
+- [从进程栈内存底层原理到Segmentation fault报错](https://mp.weixin.qq.com/s/pTP7ELOm4-JsAl1o_nyS-Q) <font color="#dd0000">(:cn:新)</font> 
+
 
 **3.3 内存性能测试**
 - [实际测试内存在顺序IO和随机IO时的访问延时差异](https://mp.weixin.qq.com/s/_-Ar944KlztzmFYdA3JXnQ)
