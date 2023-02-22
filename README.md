@@ -6,6 +6,13 @@
 本 repo 持续更新ing...  
 
 ---
+**新文置顶:最近写的都是CPU、进程方向的**  
+- [Linux 中 CPU 利用率是如何算出来的？](https://mp.weixin.qq.com/s/40KWGKNBoa35s533YGWYIQ)
+- [从进程栈内存底层原理到Segmentation fault报错](https://mp.weixin.qq.com/s/pTP7ELOm4-JsAl1o_nyS-Q) 
+- [Linux 中的负载高低和 CPU 开销并不完全对应](https://mp.weixin.qq.com/s/1Pl4tT_Nq-fEZrtRpILiig)  
+- [Docker容器里进程的 pid 是如何申请出来的？](https://mp.weixin.qq.com/s/LDu6s1eZw6_xEwfa6pMM-A) 
+
+---
 
 大家好，飞哥在博客文章的基础上出版了一本书，名字叫做《深入理解Linux网络》。该书市场接受度非常的高，在首发当天就斩获了京东科技类图书的第一名，几天就将首印卖断了货。
 
@@ -14,13 +21,6 @@
 点击：[京东购买地址](https://union-click.jd.com/jdc?e=618%7Cpc%7C&p=JF8BANcJK1olXwcFV19UDkoTC18IGVsTWAIFUG4ZVxNJXF9RXh5UHw0cSgYYXBcIWDoXSQVJQwYAVFhYDEwTHDZNRwYlCF1nABo_UA50SxVoUidML2RaNEQUeEcbM244GFoWVQIBV11UDnsnA2g4STXN67Da8e9B3OGY1uefK1olXQEGUVdYD04VBmsMGWsSXQ8yHQYCXglTVDtXK2slXjYFVFdJDjlWUXsOaWslXTYBZBwzCB4XVmYBGl9HWFNXUVYJDEMWAGcAT1kQXA8DXV5ZAEsnAW4JH1IlbQ)
 
 另外大家也可以加飞哥微信（zhangyanfei748527）进读者交流群。
-
-
----
-**新文置顶:最近写的都是CPU、进程方向的**  
-- [从进程栈内存底层原理到Segmentation fault报错](https://mp.weixin.qq.com/s/pTP7ELOm4-JsAl1o_nyS-Q) <font color="#dd0000">(:cn:新)</font> 
-- [Linux 中的负载高低和 CPU 开销并不完全对应](https://mp.weixin.qq.com/s/1Pl4tT_Nq-fEZrtRpILiig)  <font color="#dd0000">(:cn:新)</font> 
-- [Docker容器里进程的 pid 是如何申请出来的？](https://mp.weixin.qq.com/s/LDu6s1eZw6_xEwfa6pMM-A) <font color="#dd0000">(:cn:新)</font> 
 
 
 ## 一、网络篇
@@ -137,6 +137,8 @@
 
 **4.4 CPU性能优化**
 - [一个likely的简单使用，背后却是对CPU工作原理的深刻理解](https://mp.weixin.qq.com/s/2YJVAEanfjSYgmZh8GRNrg) <font color="#dd0000">(:cn:新)</font>
+- [Linux 中 CPU 利用率是如何算出来的？](https://mp.weixin.qq.com/s/40KWGKNBoa35s533YGWYIQ)  <font color="#dd0000">(:cn:新)</font> 
+
 
 **4.5 进程管理**
 - [Linux进程是如何创建出来的？](https://mp.weixin.qq.com/s/ftrSkVvOr6s5t0h4oq4I2w)  <font color="#dd0000">(:cn:新)</font> 
