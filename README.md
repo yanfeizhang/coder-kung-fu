@@ -11,6 +11,8 @@
 - [从进程栈内存底层原理到Segmentation fault报错](https://mp.weixin.qq.com/s/pTP7ELOm4-JsAl1o_nyS-Q) 
 - [Linux 中的负载高低和 CPU 开销并不完全对应](https://mp.weixin.qq.com/s/1Pl4tT_Nq-fEZrtRpILiig)  
 - [Docker容器里进程的 pid 是如何申请出来的？](https://mp.weixin.qq.com/s/LDu6s1eZw6_xEwfa6pMM-A) 
+- [内核是如何给容器中的进程分配CPU资源的？](https://mp.weixin.qq.com/s/rUQLM8WfjMqa__Nvhjhmxw)
+
 
 ---
 
@@ -35,11 +37,11 @@
 - [图解 | 深入理解高性能网络开发路上的绊脚石 - 同步阻塞网络 IO](https://mp.weixin.qq.com/s/cIcw0S-Q8pBl1-WYN0UwnA) 
 - [🔥图解 | 深入揭秘 epoll 是如何实现 IO 多路复用的！](https://mp.weixin.qq.com/s/OmRdUgO1guMX76EdZn11UQ)
 - [漫画 | 看进程小 P 讲述它的网络性能故事！](https://mp.weixin.qq.com/s/r7EDYsvVhWA2fv52mwM_zg)
-- [在 golang 中是如何对 epoll 进行封装的？](https://mp.weixin.qq.com/s/hjWhh_zHfxmH1yZFfvu_zA)  <font color="#dd0000">(:cn:新)</font> 
-- [万字多图，搞懂 Nginx 高性能网络工作原理！](https://mp.weixin.qq.com/s/AX6Fval8RwkgzptdjlU5kg)  <font color="#dd0000">(:cn:新)</font> 
+- [在 golang 中是如何对 epoll 进行封装的？](https://mp.weixin.qq.com/s/hjWhh_zHfxmH1yZFfvu_zA)
+- [万字多图，搞懂 Nginx 高性能网络工作原理！](https://mp.weixin.qq.com/s/AX6Fval8RwkgzptdjlU5kg)
 - [单线程 Redis 如何做到每秒数万 QPS 的超高处理能力！](https://mp.weixin.qq.com/s/2y60cxUjaaE2pWSdCBX1lA)
-- [Redis 6 中的多线程实现方式比我预期的要差](https://mp.weixin.qq.com/s/MU8cxoKS3rU9mN_CY3WxWQ)  <font color="#dd0000">(:cn:新)</font>
-- [剖析Netty内部网络实现原理](https://mp.weixin.qq.com/s/DS52g3bibU9kNH75UFxGqA)  <font color="#dd0000">(:cn:新)</font>
+- [Redis 6 中的多线程实现方式比我预期的要差](https://mp.weixin.qq.com/s/MU8cxoKS3rU9mN_CY3WxWQ) 
+- [剖析Netty内部网络实现原理](https://mp.weixin.qq.com/s/DS52g3bibU9kNH75UFxGqA)
 
 **1.3 TCP之三次握手**
 - [为什么服务端程序都需要先 listen 一下？](https://mp.weixin.qq.com/s/hv2tmtVpxhVxr6X-RNWBsQ)
@@ -90,7 +92,7 @@
 - [理解格式化原理](https://mp.weixin.qq.com/s/DobymgQ-TRXrO32wjf2fWQ)
 
 **2.3 文件读写性能**
-- [read文件一个字节实际会发生多大的磁盘IO？](https://mp.weixin.qq.com/s/vekemOfUHBjZSy3uXb49Rw)   <font color="#dd0000">(:cn:新)</font>
+- [read文件一个字节实际会发生多大的磁盘IO？](https://mp.weixin.qq.com/s/vekemOfUHBjZSy3uXb49Rw)
 - [write文件一个字节后何时发起写磁盘IO？](https://zhuanlan.zhihu.com/p/142441899)
 - [机械硬盘随机IO慢的超乎你的想象](https://mp.weixin.qq.com/s/qz57uPtFaoQ_5z59NSBEUQ)
 - [搭载固态硬盘的服务器究竟比搭机械硬盘快多少？](https://mp.weixin.qq.com/s/4CKPLpEDDbIyqJGxYDAUeA)
@@ -150,14 +152,15 @@
 **4.6 容器进程管理**
 - [一次限制进程的 CPU 用量的实操过程](https://mp.weixin.qq.com/s/WQXURUChn8AZW17_Bi5plg)
 - [Docker容器里进程的 pid 是如何申请出来的？](https://mp.weixin.qq.com/s/LDu6s1eZw6_xEwfa6pMM-A) <font color="#dd0000">(:cn:新)</font> 
+- [内核是如何给容器中的进程分配CPU资源的？](https://mp.weixin.qq.com/s/rUQLM8WfjMqa__Nvhjhmxw) <font color="#dd0000">(:cn:新)</font> 
 
 
 ## 五、应用篇
 - [峰值 QPS 50 万 +，性能优异的网络框架开源力作 Sogou Workflow！](https://mp.weixin.qq.com/s/clILKrOO7_XJs6uHp5hoUw)
 
 ## 六、答读者问
-- [今天聊聊飞哥是怎么阅读内核源码的](https://mp.weixin.qq.com/s/-WA6J9BZeZJIQTZtDHD5hA)  <font color="#dd0000">(:cn:新)</font>
-- [答读者问，飞哥能否给推荐几本硬核技术书？](https://mp.weixin.qq.com/s/OQyGEi0rvJRS0HJstaPWKQ)  <font color="#dd0000">(:cn:新)</font>
+- [今天聊聊飞哥是怎么阅读内核源码的](https://mp.weixin.qq.com/s/-WA6J9BZeZJIQTZtDHD5hA)
+- [答读者问，飞哥能否给推荐几本硬核技术书？](https://mp.weixin.qq.com/s/OQyGEi0rvJRS0HJstaPWKQ)
 - [程序员完全没有时间提升自己该怎么办？](https://mp.weixin.qq.com/s/5f7x60bNCNK2a5nz8FL5yg)
 - [写给内功修炼读者的一封信!](https://mp.weixin.qq.com/s/Pzo46nZtSlsv_M6Tq7pv_A)
 - [我是怎么样写出开发内功修炼的？秘密都在这里！](https://mp.weixin.qq.com/s/rUWqVtoP3_f0M6ltN_1gqA)
