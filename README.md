@@ -6,13 +6,12 @@
 本 repo 持续更新ing...  
 
 ---
-**新文置顶:最近写的都是CPU、进程方向的**  
+**新文置顶:最近写的都是CPU、进程方向的** 
+- [人人都应该知道的CPU缓存运行效率](https://mp.weixin.qq.com/s/45QjjfkLrefWy2QjS_aDSw)  <font color="#dd0000">(:cn:新)</font> 
 - [如何正确获取容器的CPU利用率？](https://mp.weixin.qq.com/s/nKedQRFxmIgPBxtlIJasZw)  <font color="#dd0000">(:cn:新)</font> 
 - [Linux 中 CPU 利用率是如何算出来的？](https://mp.weixin.qq.com/s/40KWGKNBoa35s533YGWYIQ)
 - [从进程栈内存底层原理到Segmentation fault报错](https://mp.weixin.qq.com/s/pTP7ELOm4-JsAl1o_nyS-Q) 
 - [Linux 中的负载高低和 CPU 开销并不完全对应](https://mp.weixin.qq.com/s/1Pl4tT_Nq-fEZrtRpILiig)  
-- [Docker容器里进程的 pid 是如何申请出来的？](https://mp.weixin.qq.com/s/LDu6s1eZw6_xEwfa6pMM-A) 
-- [内核是如何给容器中的进程分配CPU资源的？](https://mp.weixin.qq.com/s/rUQLM8WfjMqa__Nvhjhmxw)
 
 
 ---
@@ -142,6 +141,7 @@
 - [一个likely的简单使用，背后却是对CPU工作原理的深刻理解](https://mp.weixin.qq.com/s/2YJVAEanfjSYgmZh8GRNrg) <font color="#dd0000">(:cn:新)</font>
 - [Linux 中 CPU 利用率是如何算出来的？](https://mp.weixin.qq.com/s/40KWGKNBoa35s533YGWYIQ)  <font color="#dd0000">(:cn:新)</font> 
 - [如何正确获取容器的CPU利用率？](https://mp.weixin.qq.com/s/nKedQRFxmIgPBxtlIJasZw)  <font color="#dd0000">(:cn:新)</font> 
+- [人人都应该知道的CPU缓存运行效率](https://mp.weixin.qq.com/s/45QjjfkLrefWy2QjS_aDSw)  <font color="#dd0000">(:cn:新)</font> 
 
 
 **4.5 进程管理**
