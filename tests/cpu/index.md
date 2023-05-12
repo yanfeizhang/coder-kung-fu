@@ -2,3 +2,4 @@
 - [物理机 cpu 系统利用率的计算过程](tests/cpu/test06)
 - [容器 cpu 系统利用率的计算过程](tests/cpu/test07)
 - [直接使用perf_event_open获取硬件计数](tests/cpu/test08)
+- [火焰图专用测试代码](tests/cpu/test09)
