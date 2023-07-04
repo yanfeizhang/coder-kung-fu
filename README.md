@@ -7,11 +7,11 @@
 
 ---
 **新文置顶:最近写的都是CPU、进程方向的** 
+- [剖析CPU性能火焰图生成的内部原理](https://mp.weixin.qq.com/s/A19RlLhSgbzw8UU4p1TZNA)  <font color="#dd0000">(:cn:新)</font> 
+- [盘点内核中常见的CPU性能卡点](https://mp.weixin.qq.com/s/moZjYijy2WcnGSTfv-nr9Q)  <font color="#dd0000">(:cn:新)</font> 
 - [人人都应该知道的CPU缓存运行效率](https://mp.weixin.qq.com/s/45QjjfkLrefWy2QjS_aDSw)  <font color="#dd0000">(:cn:新)</font> 
 - [如何正确获取容器的CPU利用率？](https://mp.weixin.qq.com/s/nKedQRFxmIgPBxtlIJasZw)  <font color="#dd0000">(:cn:新)</font> 
 - [Linux 中 CPU 利用率是如何算出来的？](https://mp.weixin.qq.com/s/40KWGKNBoa35s533YGWYIQ)
-- [从进程栈内存底层原理到Segmentation fault报错](https://mp.weixin.qq.com/s/pTP7ELOm4-JsAl1o_nyS-Q) 
-- [Linux 中的负载高低和 CPU 开销并不完全对应](https://mp.weixin.qq.com/s/1Pl4tT_Nq-fEZrtRpILiig)  
 
 
 ---
@@ -142,19 +142,21 @@
 - [Linux 中 CPU 利用率是如何算出来的？](https://mp.weixin.qq.com/s/40KWGKNBoa35s533YGWYIQ)  <font color="#dd0000">(:cn:新)</font> 
 - [如何正确获取容器的CPU利用率？](https://mp.weixin.qq.com/s/nKedQRFxmIgPBxtlIJasZw)  <font color="#dd0000">(:cn:新)</font> 
 - [人人都应该知道的CPU缓存运行效率](https://mp.weixin.qq.com/s/45QjjfkLrefWy2QjS_aDSw)  <font color="#dd0000">(:cn:新)</font> 
+- [剖析CPU性能火焰图生成的内部原理](https://mp.weixin.qq.com/s/A19RlLhSgbzw8UU4p1TZNA)  <font color="#dd0000">(:cn:新)</font> 
+- [盘点内核中常见的CPU性能卡点](https://mp.weixin.qq.com/s/moZjYijy2WcnGSTfv-nr9Q)  <font color="#dd0000">(:cn:新)</font> 
 
 
 **4.5 进程管理**
-- [Linux进程是如何创建出来的？](https://mp.weixin.qq.com/s/ftrSkVvOr6s5t0h4oq4I2w)  <font color="#dd0000">(:cn:新)</font> 
-- [你写的代码是如何跑起来的？](https://mp.weixin.qq.com/s/1bdktqYF7VyAMadRlcRrSg)  <font color="#dd0000">(:cn:新)</font> 
-- [聊聊Linux中线程和进程的联系与区别！](https://mp.weixin.qq.com/s/--S94B3RswMdBKBh6uxt0w)  <font color="#dd0000">(:cn:新)</font> 
-- [你的新进程是如何被内核调度执行到的？](https://mp.weixin.qq.com/s/y2axbQTzOGZweJn3LAhWvg)  <font color="#dd0000">(:cn:新)</font> 
-- [Linux 中的负载高低和 CPU 开销并不完全对应](https://mp.weixin.qq.com/s/1Pl4tT_Nq-fEZrtRpILiig)  <font color="#dd0000">(:cn:新)</font> 
+- [Linux进程是如何创建出来的？](https://mp.weixin.qq.com/s/ftrSkVvOr6s5t0h4oq4I2w)
+- [你写的代码是如何跑起来的？](https://mp.weixin.qq.com/s/1bdktqYF7VyAMadRlcRrSg)
+- [聊聊Linux中线程和进程的联系与区别！](https://mp.weixin.qq.com/s/--S94B3RswMdBKBh6uxt0w) 
+- [你的新进程是如何被内核调度执行到的？](https://mp.weixin.qq.com/s/y2axbQTzOGZweJn3LAhWvg)
+- [Linux 中的负载高低和 CPU 开销并不完全对应](https://mp.weixin.qq.com/s/1Pl4tT_Nq-fEZrtRpILiig)
 
 **4.6 容器进程管理**
 - [一次限制进程的 CPU 用量的实操过程](https://mp.weixin.qq.com/s/WQXURUChn8AZW17_Bi5plg)
-- [Docker容器里进程的 pid 是如何申请出来的？](https://mp.weixin.qq.com/s/LDu6s1eZw6_xEwfa6pMM-A) <font color="#dd0000">(:cn:新)</font> 
-- [内核是如何给容器中的进程分配CPU资源的？](https://mp.weixin.qq.com/s/rUQLM8WfjMqa__Nvhjhmxw) <font color="#dd0000">(:cn:新)</font> 
+- [Docker容器里进程的 pid 是如何申请出来的？](https://mp.weixin.qq.com/s/LDu6s1eZw6_xEwfa6pMM-A)
+- [内核是如何给容器中的进程分配CPU资源的？](https://mp.weixin.qq.com/s/rUQLM8WfjMqa__Nvhjhmxw)
 
 
 ## 五、应用篇
