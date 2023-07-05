@@ -1,7 +1,7 @@
 
 我们所有的开发同学每时每刻都在使用内核、都在使用硬件。所以能正确理解内核是怎么工作的、硬件的性能指标大概是多少，这些对于高阶的开发工程师来说非常重要。想成为技术大牛，扎实练习内功是必经之路！  
 
-飞哥的开发内功修炼从 CPU、内存、磁盘、网络四大模块进行深度思考，总结出来，在这里分享给积极上进的你！欢迎添加飞哥微信交流与围观朋友圈: zhangyanfei748527  
+飞哥的开发内功修炼从 CPU、内存、磁盘、网络四大模块进行深度思考，总结出来，在这里分享给积极上进的你！欢迎添加飞哥微信交流与围观朋友圈: zhangyanfei748528  
 
 本 repo 持续更新ing...  
 
@@ -22,7 +22,7 @@
 
 点击：[京东购买地址](https://union-click.jd.com/jdc?e=618%7Cpc%7C&p=JF8BANcJK1olXwcFV19UDkoTC18IGVsTWAIFUG4ZVxNJXF9RXh5UHw0cSgYYXBcIWDoXSQVJQwYAVFhYDEwTHDZNRwYlCF1nABo_UA50SxVoUidML2RaNEQUeEcbM244GFoWVQIBV11UDnsnA2g4STXN67Da8e9B3OGY1uefK1olXQEGUVdYD04VBmsMGWsSXQ8yHQYCXglTVDtXK2slXjYFVFdJDjlWUXsOaWslXTYBZBwzCB4XVmYBGl9HWFNXUVYJDEMWAGcAT1kQXA8DXV5ZAEsnAW4JH1IlbQ)
 
-另外大家也可以加飞哥微信（zhangyanfei748527）进读者交流群。
+另外大家也可以加飞哥微信（zhangyanfei748528）进读者交流群。
 
 
 ## 一、网络篇
@@ -178,4 +178,4 @@
 --- 
 为了方便大家阅读，本 Github 的网络篇核心内容整理成了 PDF 电子书，也即将出版。该书好评众多，欢迎大家下载！ [**百度网盘地址**](https://pan.baidu.com/s/11u6z26xnRNlIOSQ4ohzNuA) 密码:q79d
 
-如若网盘地址出问题，也可以通过微信（zhangyanfei748527）找飞哥，我直接发你！ 
+如若网盘地址出问题，也可以通过微信（zhangyanfei748528）找飞哥，我直接发你！ 
