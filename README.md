@@ -7,11 +7,9 @@
 
 ---
 **新文置顶:最近写的都是CPU、进程方向的** 
+- [深入剖析 Golang 程序启动原理 - 从 ELF 入口点到GMP初始化到执行 main！](https://mp.weixin.qq.com/s/0EZCmABsMEV3TFVmDZmzZA)     <font color="#dd0000">(:cn:新)</font> 
 - [为什么新版内核将进程pid管理从bitmap替换成了radix-tree？](https://mp.weixin.qq.com/s/0w7dJh0Gr4PokUBcy8rN7w)   <font color="#dd0000">(:cn:新)</font> 
 - [剖析CPU性能火焰图生成的内部原理](https://mp.weixin.qq.com/s/A19RlLhSgbzw8UU4p1TZNA)  <font color="#dd0000">(:cn:新)</font> 
-- [盘点内核中常见的CPU性能卡点](https://mp.weixin.qq.com/s/moZjYijy2WcnGSTfv-nr9Q)  <font color="#dd0000">(:cn:新)</font> 
-- [人人都应该知道的CPU缓存运行效率](https://mp.weixin.qq.com/s/45QjjfkLrefWy2QjS_aDSw)  <font color="#dd0000">(:cn:新)</font> 
-- [如何正确获取容器的CPU利用率？](https://mp.weixin.qq.com/s/nKedQRFxmIgPBxtlIJasZw)  <font color="#dd0000">(:cn:新)</font> 
 
 
 ---
@@ -20,9 +18,7 @@
 
 ![avatar](imgs/book.png)  
 
-点击：[京东购买地址](https://union-click.jd.com/jdc?e=618%7Cpc%7C&p=JF8BANcJK1olXwcFV19UDkoTC18IGVsTWAIFUG4ZVxNJXF9RXh5UHw0cSgYYXBcIWDoXSQVJQwYAVFhYDEwTHDZNRwYlCF1nABo_UA50SxVoUidML2RaNEQUeEcbM244GFoWVQIBV11UDnsnA2g4STXN67Da8e9B3OGY1uefK1olXQEGUVdYD04VBmsMGWsSXQ8yHQYCXglTVDtXK2slXjYFVFdJDjlWUXsOaWslXTYBZBwzCB4XVmYBGl9HWFNXUVYJDEMWAGcAT1kQXA8DXV5ZAEsnAW4JH1IlbQ)
-
-另外大家也可以加飞哥微信（zhangyanfei748528）进读者交流群。
+在京东和当当直接搜书名即可。另外大家也可以加飞哥微信（zhangyanfei748528）进读者交流群。
 
 
 ## 一、网络篇
@@ -160,7 +156,8 @@
 - [内核是如何给容器中的进程分配CPU资源的？](https://mp.weixin.qq.com/s/rUQLM8WfjMqa__Nvhjhmxw)
 
 
-## 五、应用篇
+## 五、语言和框架
+- [深入剖析 Golang 程序启动原理 - 从 ELF 入口点到GMP初始化到执行 main！](https://mp.weixin.qq.com/s/0EZCmABsMEV3TFVmDZmzZA)     <font color="#dd0000">(:cn:新)</font> 
 - [峰值 QPS 50 万 +，性能优异的网络框架开源力作 Sogou Workflow！](https://mp.weixin.qq.com/s/clILKrOO7_XJs6uHp5hoUw)
 
 ## 六、答读者问
