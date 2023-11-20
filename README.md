@@ -6,10 +6,9 @@
 本 repo 持续更新ing...  
 
 ---
-**新文置顶:最近写的都是CPU、进程方向的** 
-- [深入剖析 Golang 程序启动原理 - 从 ELF 入口点到GMP初始化到执行 main！](https://mp.weixin.qq.com/s/0EZCmABsMEV3TFVmDZmzZA)     <font color="#dd0000">(:cn:新)</font> 
-- [为什么新版内核将进程pid管理从bitmap替换成了radix-tree？](https://mp.weixin.qq.com/s/0w7dJh0Gr4PokUBcy8rN7w)   <font color="#dd0000">(:cn:新)</font> 
-- [剖析CPU性能火焰图生成的内部原理](https://mp.weixin.qq.com/s/A19RlLhSgbzw8UU4p1TZNA)  <font color="#dd0000">(:cn:新)</font> 
+**新文置顶:** 
+- [深入了解 CPU 的型号、代际架构与微架构](https://mp.weixin.qq.com/s/CIdehZeaCm2saYuzhUcqFA)
+- [聊聊近些年 CPU 在微架构、IO 速率上的演进过程](https://mp.weixin.qq.com/s/ungGwoy2zSALLpq8FgQvcg)
 
 
 ---
@@ -122,6 +121,9 @@
 - [你以为你的多核CPU都是真核吗？多核“假象”](https://mp.weixin.qq.com/s/XX1yh8BTgT256pAnfosQkw)
 - [听说你只知内存，而不知缓存？CPU表示很伤心！](https://mp.weixin.qq.com/s/PQTuFZO51an6OAe3WX4BVw)
 - [TLB缓存是个神马鬼，如何查看TLB miss？](https://mp.weixin.qq.com/s/mssTS3NN7-w2df1vhYSuYw)
+- [深入了解 CPU 的型号、代际架构与微架构](https://mp.weixin.qq.com/s/CIdehZeaCm2saYuzhUcqFA) <font color="#dd0000">(:cn:新)</font>
+- [聊聊近些年 CPU 在微架构、IO 速率上的演进过程](https://mp.weixin.qq.com/s/ungGwoy2zSALLpq8FgQvcg) <font color="#dd0000">(:cn:新)</font>
+
 
 **4.2 内核CPU开销浅析**
 - [进程/线程切换究竟需要多少开销？](https://mp.weixin.qq.com/s/uq5s5vwk5vtPOZ30sfNsOg)
@@ -134,12 +136,12 @@
 - [函数调用太多了会有性能问题吗？](https://mp.weixin.qq.com/s/G30VtOIYjx2Wa54xlO7udw)
 
 **4.4 CPU性能优化**
-- [一个likely的简单使用，背后却是对CPU工作原理的深刻理解](https://mp.weixin.qq.com/s/2YJVAEanfjSYgmZh8GRNrg) <font color="#dd0000">(:cn:新)</font>
-- [Linux 中 CPU 利用率是如何算出来的？](https://mp.weixin.qq.com/s/40KWGKNBoa35s533YGWYIQ)  <font color="#dd0000">(:cn:新)</font> 
-- [如何正确获取容器的CPU利用率？](https://mp.weixin.qq.com/s/nKedQRFxmIgPBxtlIJasZw)  <font color="#dd0000">(:cn:新)</font> 
-- [人人都应该知道的CPU缓存运行效率](https://mp.weixin.qq.com/s/45QjjfkLrefWy2QjS_aDSw)  <font color="#dd0000">(:cn:新)</font> 
-- [剖析CPU性能火焰图生成的内部原理](https://mp.weixin.qq.com/s/A19RlLhSgbzw8UU4p1TZNA)  <font color="#dd0000">(:cn:新)</font> 
-- [盘点内核中常见的CPU性能卡点](https://mp.weixin.qq.com/s/moZjYijy2WcnGSTfv-nr9Q)  <font color="#dd0000">(:cn:新)</font> 
+- [一个likely的简单使用，背后却是对CPU工作原理的深刻理解](https://mp.weixin.qq.com/s/2YJVAEanfjSYgmZh8GRNrg) 
+- [Linux 中 CPU 利用率是如何算出来的？](https://mp.weixin.qq.com/s/40KWGKNBoa35s533YGWYIQ)  
+- [如何正确获取容器的CPU利用率？](https://mp.weixin.qq.com/s/nKedQRFxmIgPBxtlIJasZw)
+- [人人都应该知道的CPU缓存运行效率](https://mp.weixin.qq.com/s/45QjjfkLrefWy2QjS_aDSw)
+- [剖析CPU性能火焰图生成的内部原理](https://mp.weixin.qq.com/s/A19RlLhSgbzw8UU4p1TZNA)
+- [盘点内核中常见的CPU性能卡点](https://mp.weixin.qq.com/s/moZjYijy2WcnGSTfv-nr9Q)
 
 
 **4.5 进程管理**
