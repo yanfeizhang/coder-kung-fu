@@ -7,6 +7,7 @@
 
 ---
 **新文置顶:** 
+- [聊聊跨进程共享内存的内部工作原理](https://mp.weixin.qq.com/s/KzKkXhxjBLcgiHHB18ASGw)
 - [深入了解 CPU 的型号、代际架构与微架构](https://mp.weixin.qq.com/s/CIdehZeaCm2saYuzhUcqFA)
 - [聊聊近些年 CPU 在微架构、IO 速率上的演进过程](https://mp.weixin.qq.com/s/ungGwoy2zSALLpq8FgQvcg)
 
@@ -101,9 +102,9 @@
 
 **3.2 内核内存管理**
 - [说出来你可能不信，内核这家伙在内存的使用上给自己开了个小灶！](https://mp.weixin.qq.com/s/OR2XB4J76haGc1THeq7WQg) 
-- [明明还有大量内存，为啥报错“无法分配内存”？](https://mp.weixin.qq.com/s/Jo8KEzfb1OXShrb3PT4U_A) <font color="#dd0000">(:cn:新)</font>  
-- [从进程栈内存底层原理到Segmentation fault报错](https://mp.weixin.qq.com/s/pTP7ELOm4-JsAl1o_nyS-Q) <font color="#dd0000">(:cn:新)</font> 
-
+- [明明还有大量内存，为啥报错“无法分配内存”？](https://mp.weixin.qq.com/s/Jo8KEzfb1OXShrb3PT4U_A)
+- [从进程栈内存底层原理到Segmentation fault报错](https://mp.weixin.qq.com/s/pTP7ELOm4-JsAl1o_nyS-Q)
+- [聊聊跨进程共享内存的内部工作原理](https://mp.weixin.qq.com/s/KzKkXhxjBLcgiHHB18ASGw) <font color="#dd0000">(:cn:新)</font> 
 
 **3.3 内存性能测试**
 - [实际测试内存在顺序IO和随机IO时的访问延时差异](https://mp.weixin.qq.com/s/_-Ar944KlztzmFYdA3JXnQ)
