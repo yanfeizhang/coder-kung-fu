@@ -7,6 +7,7 @@
 
 ---
 **新文置顶:** 
+- [聊聊C语言中的malloc申请内存的内部原理](https://mp.weixin.qq.com/s/7ZyCXUABL0Urso4VeaEdBQ)
 - [深入了解服务器 CPU 的型号、代际、片内与片间互联架构](https://mp.weixin.qq.com/s/7nwiX3JaGwL-EOZz77GohA)
 - [聊聊跨进程共享内存的内部工作原理](https://mp.weixin.qq.com/s/KzKkXhxjBLcgiHHB18ASGw)
 - [深入了解 CPU 的型号、代际架构与微架构](https://mp.weixin.qq.com/s/CIdehZeaCm2saYuzhUcqFA)
@@ -106,13 +107,16 @@
 - [从进程栈内存底层原理到Segmentation fault报错](https://mp.weixin.qq.com/s/pTP7ELOm4-JsAl1o_nyS-Q)
 - [聊聊跨进程共享内存的内部工作原理](https://mp.weixin.qq.com/s/KzKkXhxjBLcgiHHB18ASGw) <font color="#dd0000">(:cn:新)</font> 
 
-**3.3 内存性能测试**
+**3.3 语言运行时内存管理**
+- [聊聊C语言中的malloc申请内存的内部原理](https://mp.weixin.qq.com/s/7ZyCXUABL0Urso4VeaEdBQ)
+
+**3.4 内存性能测试**
 - [实际测试内存在顺序IO和随机IO时的访问延时差异](https://mp.weixin.qq.com/s/_-Ar944KlztzmFYdA3JXnQ)
 - [揭穿内存厂家“谎言”，实测内存带宽真实表现](https://mp.weixin.qq.com/s/AJjBHCNPWN8YW8v0iXjjig)
 - [NUMA架构下的内存访问延迟区别！](https://mp.weixin.qq.com/s/xUZl5wGRVvJI_Hfivg0hVQ)
 - [挑战Redis单实例内存最大极限，“遭遇”NUMA陷阱！](https://mp.weixin.qq.com/s/dag1Zp1h4lQfqeUUGz4Ogw)
 
-**3.4 内存性能优化实例**
+**3.5 内存性能优化实例**
 - [一次内存性能提升的项目实践](https://mp.weixin.qq.com/s/foJJ2E7_jVgnOeJ9Du6qJg)
 - [PHP7内存性能优化的思想精髓](https://mp.weixin.qq.com/s/3DrDb0CY8dUmFUKtuWzhqA)
 
