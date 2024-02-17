@@ -70,7 +70,10 @@
 - [理解 iptables 原理](https://mp.weixin.qq.com/s/O084fYzUFk7jAzJ2DDeADg)
 - [天天讲路由，那 Linux 路由到底咋实现的！？](https://mp.weixin.qq.com/s/UHYE6vwMffaAb-o5eNMrDg)
 
-**1.8 电子书** 
+**1.8 性能优化**
+- [关于 Linux 网络性能的 15 个优化建议！](https://mp.weixin.qq.com/s/-xiWjPRiRsPcxODnJ3921Q)
+
+**1.9 电子书** 
 - [🔥开发内功修炼网络篇电子书出炉！！！](https://mp.weixin.qq.com/s/kE8y9em9a0Xv80YaQqPbRg)
 
 ## 二、硬盘篇  
