@@ -7,11 +7,10 @@
 
 ---
 **新文置顶:** 
+- [个人电脑上CPU和服务器上的CPU都有哪些区别？](https://mp.weixin.qq.com/s/VY7Fj2X3rYg0S3gy5Hvi8A)
 - [聊聊C语言中的malloc申请内存的内部原理](https://mp.weixin.qq.com/s/7ZyCXUABL0Urso4VeaEdBQ)
 - [深入了解服务器 CPU 的型号、代际、片内与片间互联架构](https://mp.weixin.qq.com/s/7nwiX3JaGwL-EOZz77GohA)
 - [聊聊跨进程共享内存的内部工作原理](https://mp.weixin.qq.com/s/KzKkXhxjBLcgiHHB18ASGw)
-- [深入了解 CPU 的型号、代际架构与微架构](https://mp.weixin.qq.com/s/CIdehZeaCm2saYuzhUcqFA)
-- [聊聊近些年 CPU 在微架构、IO 速率上的演进过程](https://mp.weixin.qq.com/s/ungGwoy2zSALLpq8FgQvcg)
 
 ---
 
@@ -132,6 +131,7 @@
 - [深入了解 CPU 的型号、代际架构与微架构](https://mp.weixin.qq.com/s/CIdehZeaCm2saYuzhUcqFA) 
 - [聊聊近些年 CPU 在微架构、IO 速率上的演进过程](https://mp.weixin.qq.com/s/ungGwoy2zSALLpq8FgQvcg)
 - [深入了解服务器 CPU 的型号、代际、片内与片间互联架构](https://mp.weixin.qq.com/s/7nwiX3JaGwL-EOZz77GohA)
+- [个人电脑上CPU和服务器上的CPU都有哪些区别？](https://mp.weixin.qq.com/s/VY7Fj2X3rYg0S3gy5Hvi8A)
 
 
 **4.2 内核CPU开销浅析**
