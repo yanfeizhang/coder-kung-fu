@@ -7,11 +7,10 @@
 
 ---
 **新文置顶:** 
+- [看懂服务器 CPU 内存支持，学会计算内存带宽](https://mp.weixin.qq.com/s/ANKD54RPJePb27hi6dXAcA)
 - [个人电脑上CPU和服务器上的CPU都有哪些区别？](https://mp.weixin.qq.com/s/VY7Fj2X3rYg0S3gy5Hvi8A)
 - [聊聊C语言中的malloc申请内存的内部原理](https://mp.weixin.qq.com/s/7ZyCXUABL0Urso4VeaEdBQ)
 - [深入了解服务器 CPU 的型号、代际、片内与片间互联架构](https://mp.weixin.qq.com/s/7nwiX3JaGwL-EOZz77GohA)
-- [聊聊跨进程共享内存的内部工作原理](https://mp.weixin.qq.com/s/KzKkXhxjBLcgiHHB18ASGw)
-
 ---
 
 大家好，飞哥在博客文章的基础上出版了一本书，名字叫做《深入理解Linux网络》。该书市场接受度非常的高，在首发当天就斩获了京东科技类图书的第一名，几天就将首印卖断了货。
@@ -102,12 +101,13 @@
 - [带你深入理解内存对齐最底层原理](https://mp.weixin.qq.com/s/F0NTfz-3x3UxQeF-GSavRg)
 - [内存随机也比顺序访问慢，带你深入理解内存IO过程](https://mp.weixin.qq.com/s/ps8VfGpbL4-xKggM2ywjHw)
 - [从DDR到DDR4，内存核心频率其实基本上就没太大的进步](https://mp.weixin.qq.com/s/LRxhKrUOgyCexYN1lOwTyA)
+- [看懂服务器 CPU 内存支持，学会计算内存带宽](https://mp.weixin.qq.com/s/ANKD54RPJePb27hi6dXAcA)
 
 **3.2 内核内存管理**
 - [说出来你可能不信，内核这家伙在内存的使用上给自己开了个小灶！](https://mp.weixin.qq.com/s/OR2XB4J76haGc1THeq7WQg) 
 - [明明还有大量内存，为啥报错“无法分配内存”？](https://mp.weixin.qq.com/s/Jo8KEzfb1OXShrb3PT4U_A)
 - [从进程栈内存底层原理到Segmentation fault报错](https://mp.weixin.qq.com/s/pTP7ELOm4-JsAl1o_nyS-Q)
-- [聊聊跨进程共享内存的内部工作原理](https://mp.weixin.qq.com/s/KzKkXhxjBLcgiHHB18ASGw) <font color="#dd0000">(:cn:新)</font> 
+- [聊聊跨进程共享内存的内部工作原理](https://mp.weixin.qq.com/s/KzKkXhxjBLcgiHHB18ASGw) 
 
 **3.3 语言运行时内存管理**
 - [聊聊C语言中的malloc申请内存的内部原理](https://mp.weixin.qq.com/s/7ZyCXUABL0Urso4VeaEdBQ)
