@@ -7,11 +7,11 @@
 
 ---
 **新文置顶:** 
+- [为什么服务器内存硬件上的黑色颗粒这么多？](https://mp.weixin.qq.com/s/jfn8QAuZSErxLXd3kPAtiw)
+- [C语言竟可以调用Go语言函数，这是如何实现的？](https://mp.weixin.qq.com/s/zvI3SJ2zItHzx-7w1HWu0Q)
+- [理解内存的Rank、位宽以及内存颗粒内部结构](https://mp.weixin.qq.com/s/wCzeFhTE8OEWaZmMhc0iUw)
 - [看懂服务器 CPU 内存支持，学会计算内存带宽](https://mp.weixin.qq.com/s/ANKD54RPJePb27hi6dXAcA)
 - [个人电脑上CPU和服务器上的CPU都有哪些区别？](https://mp.weixin.qq.com/s/VY7Fj2X3rYg0S3gy5Hvi8A)
-- [聊聊C语言中的malloc申请内存的内部原理](https://mp.weixin.qq.com/s/7ZyCXUABL0Urso4VeaEdBQ)
-- [深入了解服务器 CPU 的型号、代际、片内与片间互联架构](https://mp.weixin.qq.com/s/7nwiX3JaGwL-EOZz77GohA)
----
 
 大家好，飞哥在博客文章的基础上出版了一本书，名字叫做《深入理解Linux网络》。该书市场接受度非常的高，在首发当天就斩获了京东科技类图书的第一名，几天就将首印卖断了货。
 
@@ -102,6 +102,8 @@
 - [内存随机也比顺序访问慢，带你深入理解内存IO过程](https://mp.weixin.qq.com/s/ps8VfGpbL4-xKggM2ywjHw)
 - [从DDR到DDR4，内存核心频率其实基本上就没太大的进步](https://mp.weixin.qq.com/s/LRxhKrUOgyCexYN1lOwTyA)
 - [看懂服务器 CPU 内存支持，学会计算内存带宽](https://mp.weixin.qq.com/s/ANKD54RPJePb27hi6dXAcA)
+- [为什么服务器内存硬件上的黑色颗粒这么多？](https://mp.weixin.qq.com/s/jfn8QAuZSErxLXd3kPAtiw)
+- [理解内存的Rank、位宽以及内存颗粒内部结构](https://mp.weixin.qq.com/s/wCzeFhTE8OEWaZmMhc0iUw)
 
 **3.2 内核内存管理**
 - [说出来你可能不信，内核这家伙在内存的使用上给自己开了个小灶！](https://mp.weixin.qq.com/s/OR2XB4J76haGc1THeq7WQg) 
@@ -166,6 +168,8 @@
 - [Docker容器里进程的 pid 是如何申请出来的？](https://mp.weixin.qq.com/s/LDu6s1eZw6_xEwfa6pMM-A)
 - [内核是如何给容器中的进程分配CPU资源的？](https://mp.weixin.qq.com/s/rUQLM8WfjMqa__Nvhjhmxw)
 
+**4.7 函数调用**
+- [C语言竟可以调用Go语言函数，这是如何实现的？](https://mp.weixin.qq.com/s/zvI3SJ2zItHzx-7w1HWu0Q)
 
 ## 五、语言和框架
 - [深入剖析 Golang 程序启动原理 - 从 ELF 入口点到GMP初始化到执行 main！](https://mp.weixin.qq.com/s/0EZCmABsMEV3TFVmDZmzZA)     <font color="#dd0000">(:cn:新)</font> 
