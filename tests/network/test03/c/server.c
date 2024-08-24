@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
     {
         printf("\n Error : Bind Failed \n");
     }
-    if((listen(lisFd, 1024)) < 0)
+    if((listen(lisFd, 10000)) < 0)
     {
         printf("\n Error : Listen Failed \n");
     }
