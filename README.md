@@ -105,6 +105,7 @@
 - [看懂服务器 CPU 内存支持，学会计算内存带宽](https://mp.weixin.qq.com/s/ANKD54RPJePb27hi6dXAcA)
 - [为什么服务器内存硬件上的黑色颗粒这么多？](https://mp.weixin.qq.com/s/jfn8QAuZSErxLXd3kPAtiw)
 - [理解内存的Rank、位宽以及内存颗粒内部结构](https://mp.weixin.qq.com/s/wCzeFhTE8OEWaZmMhc0iUw)
+- [服务器之 ECC 内存的工作原理](https://mp.weixin.qq.com/s/erqfwC_zgL71xftxE7bINQ)
 
 **3.2 内核内存管理**
 - [说出来你可能不信，内核这家伙在内存的使用上给自己开了个小灶！](https://mp.weixin.qq.com/s/OR2XB4J76haGc1THeq7WQg) 
