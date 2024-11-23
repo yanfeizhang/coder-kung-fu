@@ -137,7 +137,6 @@
 - [深入了解服务器 CPU 的型号、代际、片内与片间互联架构](https://mp.weixin.qq.com/s/7nwiX3JaGwL-EOZz77GohA)
 - [个人电脑上CPU和服务器上的CPU都有哪些区别？](https://mp.weixin.qq.com/s/VY7Fj2X3rYg0S3gy5Hvi8A)
 
-
 **4.2 内核CPU开销浅析**
 - [进程/线程切换究竟需要多少开销？](https://mp.weixin.qq.com/s/uq5s5vwk5vtPOZ30sfNsOg)
 - [软中断会吃掉你多少CPU？](https://mp.weixin.qq.com/s/mlenlX3-6H0shfOIvi8E8g)
@@ -172,6 +171,9 @@
 
 **4.7 函数调用**
 - [C语言竟可以调用Go语言函数，这是如何实现的？](https://mp.weixin.qq.com/s/zvI3SJ2zItHzx-7w1HWu0Q)
+
+**4.8 信号管理**
+- [我的服务程序被 SIGPIPE 信号给搞崩了！](https://mp.weixin.qq.com/s/WpYW0E_b-8ktsFBpiR_ZzQ)
 
 ## 五、语言和框架
 - [深入剖析 Golang 程序启动原理 - 从 ELF 入口点到GMP初始化到执行 main！](https://mp.weixin.qq.com/s/0EZCmABsMEV3TFVmDZmzZA)     <font color="#dd0000">(:cn:新)</font> 
