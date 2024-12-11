@@ -4,3 +4,4 @@
 - [直接使用perf_event_open获取硬件计数](tests/cpu/test08)
 - [火焰图专用测试代码](tests/cpu/test09)
 - [C语言调用Golang函数原理](tests/cpu/test10)
+- [模拟 strace 命令捕获其它进程系统调用](tests/cpu/test11)
