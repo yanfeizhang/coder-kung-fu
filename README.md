@@ -14,12 +14,9 @@
 
 ---
 **新文置顶:** 
+- [揭开 strace 命令捕获系统调用的神秘面纱](https://mp.weixin.qq.com/s/Iz4YPPmyjGrXVnZ8eSap2Q)
 - [为什么服务器内存硬件上的黑色颗粒这么多？](https://mp.weixin.qq.com/s/jfn8QAuZSErxLXd3kPAtiw)
 - [C语言竟可以调用Go语言函数，这是如何实现的？](https://mp.weixin.qq.com/s/zvI3SJ2zItHzx-7w1HWu0Q)
-- [理解内存的Rank、位宽以及内存颗粒内部结构](https://mp.weixin.qq.com/s/wCzeFhTE8OEWaZmMhc0iUw)
-- [看懂服务器 CPU 内存支持，学会计算内存带宽](https://mp.weixin.qq.com/s/ANKD54RPJePb27hi6dXAcA)
-- [个人电脑上CPU和服务器上的CPU都有哪些区别？](https://mp.weixin.qq.com/s/VY7Fj2X3rYg0S3gy5Hvi8A)
-
 
 ## 一、网络篇
 **1.1 内核收发包原理**
@@ -151,9 +148,6 @@
 - [一个likely的简单使用，背后却是对CPU工作原理的深刻理解](https://mp.weixin.qq.com/s/2YJVAEanfjSYgmZh8GRNrg) 
 - [Linux 中 CPU 利用率是如何算出来的？](https://mp.weixin.qq.com/s/40KWGKNBoa35s533YGWYIQ)  
 - [如何正确获取容器的CPU利用率？](https://mp.weixin.qq.com/s/nKedQRFxmIgPBxtlIJasZw)
-- [人人都应该知道的CPU缓存运行效率](https://mp.weixin.qq.com/s/45QjjfkLrefWy2QjS_aDSw)
-- [剖析CPU性能火焰图生成的内部原理](https://mp.weixin.qq.com/s/A19RlLhSgbzw8UU4p1TZNA)
-- [盘点内核中常见的CPU性能卡点](https://mp.weixin.qq.com/s/moZjYijy2WcnGSTfv-nr9Q)
 
 
 **4.5 进程管理**
@@ -175,11 +169,18 @@
 **4.8 信号管理**
 - [我的服务程序被 SIGPIPE 信号给搞崩了！](https://mp.weixin.qq.com/s/WpYW0E_b-8ktsFBpiR_ZzQ)
 
-## 五、语言和框架
+## 五、性能观测
+- [揭开 strace 命令捕获系统调用的神秘面纱](https://mp.weixin.qq.com/s/Iz4YPPmyjGrXVnZ8eSap2Q)
+- [人人都应该知道的CPU缓存运行效率](https://mp.weixin.qq.com/s/45QjjfkLrefWy2QjS_aDSw)
+- [剖析CPU性能火焰图生成的内部原理](https://mp.weixin.qq.com/s/A19RlLhSgbzw8UU4p1TZNA)
+- [盘点内核中常见的CPU性能卡点](https://mp.weixin.qq.com/s/moZjYijy2WcnGSTfv-nr9Q)
+
+
+## 六、语言和框架
 - [深入剖析 Golang 程序启动原理 - 从 ELF 入口点到GMP初始化到执行 main！](https://mp.weixin.qq.com/s/0EZCmABsMEV3TFVmDZmzZA)     <font color="#dd0000">(:cn:新)</font> 
 - [峰值 QPS 50 万 +，性能优异的网络框架开源力作 Sogou Workflow！](https://mp.weixin.qq.com/s/clILKrOO7_XJs6uHp5hoUw)
 
-## 六、答读者问
+## 七、答读者问
 - [今天聊聊飞哥是怎么阅读内核源码的](https://mp.weixin.qq.com/s/-WA6J9BZeZJIQTZtDHD5hA)
 - [答读者问，飞哥能否给推荐几本硬核技术书？](https://mp.weixin.qq.com/s/OQyGEi0rvJRS0HJstaPWKQ)
 - [程序员完全没有时间提升自己该怎么办？](https://mp.weixin.qq.com/s/5f7x60bNCNK2a5nz8FL5yg)
@@ -187,7 +188,27 @@
 - [我是怎么样写出开发内功修炼的？秘密都在这里！](https://mp.weixin.qq.com/s/rUWqVtoP3_f0M6ltN_1gqA)
 - [给想成长为高级别开发同学的七条建议](https://mp.weixin.qq.com/s/8lMGzBzXine-NAsqEaIE4g)
   
-## 七、公众号二维码
+## 八、视频体系
+目前应读者的诉求，我把我多年在系统领域积累的知识也整理成了一门成体系的视频课。在知识星球上更新。
+内容总共分为如下几大块，覆盖了系统领域的各种硬核原理知识，也包含了能帮助已工作的同学提升性能优化能力。
+- 硬件原理 (已更新)
+- 内存管理 (已更新)
+- 进程管理 (已更新)
+- 网络管理 (已更新)
+- 容器原理 (正在更新中...)
+- 性能观测 (准备中)
+- 性能优化 (准备中)
+
+其中已更新的部分如下图所示，累计 1859 分钟的内容。
+
+![avatar](imgs/course.png)   
+
+对这些视频内容感兴趣的同学可以通过下方二维码，或者在微信公众号「开发内功修炼」中回复「配套视频」观看。目前开放了 200 优惠券，优惠后是 299 一年。
+
+![avatar](imgs/zsxq.png)   
+
+
+## 九、公众号二维码
 
 **敬请扫码关注微信公众号「开发内功修炼」，及时获得最新硬核文章！**   
 ![avatar](imgs/official_accounts.jpg)   
