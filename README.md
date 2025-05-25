@@ -103,23 +103,29 @@
 - [为什么服务器内存硬件上的黑色颗粒这么多？](https://mp.weixin.qq.com/s/jfn8QAuZSErxLXd3kPAtiw)
 - [理解内存的Rank、位宽以及内存颗粒内部结构](https://mp.weixin.qq.com/s/wCzeFhTE8OEWaZmMhc0iUw)
 - [服务器之 ECC 内存的工作原理](https://mp.weixin.qq.com/s/erqfwC_zgL71xftxE7bINQ)
+- [Linux 下用 dmidecode 探秘服务器内存硬件](https://mp.weixin.qq.com/s/fIQyEtOIOoQF32avBekHLw)
 
-**3.2 内核内存管理**
+**3.2 内核内存管理模块启动过程**
+- [Linux 内核是如何检测可用物理内存地址范围的？](https://mp.weixin.qq.com/s/jZm9CbPayhAlKaptbkppnQ)
+- [Linux 内核“偷吃”了你的内存！](https://mp.weixin.qq.com/s/MSlvaSmX2NQIzK10jjLXZg)
+- [Linux 内核是如何感知到硬件上的 NUMA 信息的？]()
+
+**3.3 内核内存管理**
 - [说出来你可能不信，内核这家伙在内存的使用上给自己开了个小灶！](https://mp.weixin.qq.com/s/OR2XB4J76haGc1THeq7WQg) 
 - [明明还有大量内存，为啥报错“无法分配内存”？](https://mp.weixin.qq.com/s/Jo8KEzfb1OXShrb3PT4U_A)
 - [从进程栈内存底层原理到Segmentation fault报错](https://mp.weixin.qq.com/s/pTP7ELOm4-JsAl1o_nyS-Q)
 - [聊聊跨进程共享内存的内部工作原理](https://mp.weixin.qq.com/s/KzKkXhxjBLcgiHHB18ASGw) 
 
-**3.3 语言运行时内存管理**
+**3.4 语言运行时内存管理**
 - [聊聊C语言中的malloc申请内存的内部原理](https://mp.weixin.qq.com/s/7ZyCXUABL0Urso4VeaEdBQ)
 
-**3.4 内存性能测试**
+**3.5 内存性能测试**
 - [实际测试内存在顺序IO和随机IO时的访问延时差异](https://mp.weixin.qq.com/s/_-Ar944KlztzmFYdA3JXnQ)
 - [揭穿内存厂家“谎言”，实测内存带宽真实表现](https://mp.weixin.qq.com/s/AJjBHCNPWN8YW8v0iXjjig)
 - [NUMA架构下的内存访问延迟区别！](https://mp.weixin.qq.com/s/xUZl5wGRVvJI_Hfivg0hVQ)
 - [挑战Redis单实例内存最大极限，“遭遇”NUMA陷阱！](https://mp.weixin.qq.com/s/dag1Zp1h4lQfqeUUGz4Ogw)
 
-**3.5 内存性能优化实例**
+**3.6 内存性能优化实例**
 - [一次内存性能提升的项目实践](https://mp.weixin.qq.com/s/foJJ2E7_jVgnOeJ9Du6qJg)
 - [PHP7内存性能优化的思想精髓](https://mp.weixin.qq.com/s/3DrDb0CY8dUmFUKtuWzhqA)
 
