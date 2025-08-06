@@ -14,9 +14,8 @@
 
 ---
 **新文置顶:** 
-- [揭开 strace 命令捕获系统调用的神秘面纱](https://mp.weixin.qq.com/s/Iz4YPPmyjGrXVnZ8eSap2Q)
-- [为什么服务器内存硬件上的黑色颗粒这么多？](https://mp.weixin.qq.com/s/jfn8QAuZSErxLXd3kPAtiw)
 - [C语言竟可以调用Go语言函数，这是如何实现的？](https://mp.weixin.qq.com/s/zvI3SJ2zItHzx-7w1HWu0Q)
+- [聊聊 Linux 线程栈内存的底层实现原理！](https://mp.weixin.qq.com/s/fOIkkOOnDi7tll2p7DKPkg)
 
 ## 一、网络篇
 **1.1 内核收发包原理**
@@ -114,6 +113,7 @@
 - [说出来你可能不信，内核这家伙在内存的使用上给自己开了个小灶！](https://mp.weixin.qq.com/s/OR2XB4J76haGc1THeq7WQg) 
 - [明明还有大量内存，为啥报错“无法分配内存”？](https://mp.weixin.qq.com/s/Jo8KEzfb1OXShrb3PT4U_A)
 - [从进程栈内存底层原理到Segmentation fault报错](https://mp.weixin.qq.com/s/pTP7ELOm4-JsAl1o_nyS-Q)
+- [聊聊 Linux 线程栈内存的底层实现原理！](https://mp.weixin.qq.com/s/fOIkkOOnDi7tll2p7DKPkg)
 - [聊聊跨进程共享内存的内部工作原理](https://mp.weixin.qq.com/s/KzKkXhxjBLcgiHHB18ASGw) 
 
 **3.4 语言运行时内存管理**
