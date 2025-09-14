@@ -139,10 +139,10 @@
 - [🔥漫画 | 理解了TCP连接的实现以后，客户端的并发也爆发了！](https://mp.weixin.qq.com/s/ta6upubg0o1w03YGUo8Trg)  
 - [百看不如一练，动手测试单机百万连接的保姆级教程！](https://mp.weixin.qq.com/s/f_CMt2ni0vegB3-pf2BTTg) 
 
-**4.7 性能优化**
+**4.6 性能优化**
 - [关于 Linux 网络性能的 15 个优化建议！](https://mp.weixin.qq.com/s/-xiWjPRiRsPcxODnJ3921Q)
 
-**4.8 电子书** 
+**4.6 电子书** 
 - [🔥开发内功修炼网络篇电子书出炉！！！](https://mp.weixin.qq.com/s/kE8y9em9a0Xv80YaQqPbRg)
 
 
