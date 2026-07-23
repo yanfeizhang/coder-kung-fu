@@ -11,6 +11,12 @@
 
 本 repo 持续更新ing...  
 
+## 自動擷取與繁中轉換
+
+- 使用 `python scripts/build_articles.py --readme README.md --output-dir articles --clean` 可從本頁連結清單產生 `articles/` 內容；來源受限時會尋找公開文章鏡像。
+- 轉換採用 OpenCC `s2twp` 設定，輸出為繁體中文（台灣用語）。
+- GitHub Actions 工作流程 `.github/workflows/publish-articles.yml` 會建置 `articles/` 並發佈至 GitHub Pages。
+
 ---
 **新文置顶:** 
 - [《NVIDIA通用计算首代架构 Tesla 与 CUDA 1.0 剖析》](https://mp.weixin.qq.com/s/q-SU_GCtqZi6OpnAIsINvQ)
@@ -223,4 +229,4 @@
 --- 
 为了方便大家阅读，本 Github 的网络篇核心内容整理成了 PDF 电子书，也即将出版。该书好评众多，欢迎大家下载！ [**百度网盘地址**](https://pan.baidu.com/s/11u6z26xnRNlIOSQ4ohzNuA) 密码:q79d
 
-如若网盘地址出问题，也可以通过微信（zhangyanfei748528）找飞哥，我直接发你！ 
+如若网盘地址出问题，也可以通过微信（zhangyanfei748528）找飞哥，我直接发你！

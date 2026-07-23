@@ -1,0 +1,139 @@
+# 為什麼服務端程式都需要先 listen 一下？
+
+> 原文標題：为什么服务端程序都需要先 listen 一下？
+
+> 原文連結：http://kfngxl.cn/index.php/archives/303/
+
+---
+
+大家好，我是飛哥。
+
+大家都知道，在建立一個伺服器程式的時候，需要先 listen 一下，然後才能接收客戶端的請求。例如下面的這段程式碼我們再熟悉不過了。
+
+那麼我們今天來思考一個問題， 為什麼需要 listen 一下才能接收連線？ 或者換句話說，listen 內部執行的時候到底幹了啥？
+
+如果你也想搞清楚 listen 內部的這些秘密，那麼請跟我來！
+
+一、建立 socket
+
+伺服器要做的第一件事就是先建立一個 socket。具體就是透過呼叫 socket 函式。 當 socket 函式執行完畢後，在使用者層視角我們是看到返回了一個檔案描述符 fd。但在核心中其實是一套核心物件組合，大體結構如下。
+
+這裡簡單瞭解這個結構就行，後面我們在原始碼中看到函式指標呼叫的時候需要回頭再來看它。
+
+二、核心執行 listen
+
+2.1 listen 系統呼叫
+
+我在 net/socket.c 下找到了 listen 系統呼叫的原始碼。
+
+使用者態的 socket 檔案描述符只是一個整數而已，核心是沒有辦法直接用的。所以該函式中第一行程式碼就是根據使用者傳入的檔案描述符來查詢到對應的 socket 核心物件。
+
+再接著獲取了系統裡的 net.core.somaxconn 核心引數的值，和使用者傳入的 backlog 比較後取一個最小值傳入到下一步中。
+
+所以，雖然 listen 允許我們傳入 backlog（該值和半連線佇列、全連線佇列都有關係）。但是如果使用者傳入的比 net.core.somaxconn 還大的話是不會起作用的。
+
+接著透過呼叫 sock->ops->listen 進入協議棧的 listen 函式。
+
+2.2 協議棧 listen
+
+這裡我們需要用到第一節中的 socket 核心物件結構圖了，透過它我們可以看出 sock->ops->listen 實際執行的是 inet_listen。
+
+在這裡我們先看一下最底下這行，sk->sk_max_ack_backlog 是全連線佇列的最大長度。所以這裡我們就知道了一個關鍵技術點， 伺服器的全連線佇列長度是 listen 時傳入的 backlog 和 net.core.somaxconn 之間較小的那個值 。
+
+再回過頭看 inet_csk_listen_start 函式。
+
+在函式一開始，將 struct sock 物件強制轉換成了 inet_connection_sock，名叫 icsk。
+
+這裡簡單說下為什麼可以這麼強制轉換，這是因為 inet_connection_sock 是包含 sock 的。 tcp_sock、inet_connection_sock、inet_sock、sock 是逐層巢狀的關係，類似物件導向裡的繼承的概念。
+
+對於 TCP 的 socket 來說，sock 物件實際上是一個 tcp_sock。因此 TCP 中的 sock 物件隨時可以強制型別轉化為 tcp_sock、inet_connection_sock、inet_sock 來使用。
+
+在接下來的一行 reqsk_queue_alloc 中實際上包含了兩件重要的事情。一是接收佇列資料結構的定義。二是接收佇列的申請和初始化。這兩塊都比較重要，我們分別在 2.3 節，和 2.4 節介紹。
+
+2.3 接收佇列定義
+
+icsk->icsk_accept_queue 定義在 inet_connection_sock 下，是一個 request_sock_queue 型別的物件。是核心用來接收客戶端請求的主要資料結構。我們平時說的全連線佇列、半連線佇列全部都是在這個資料結構裡實現的。
+
+我們來看具體的程式碼。
+
+我們再來查詢到 request_sock_queue 的定義，如下。
+
+對於全連線佇列來說，在它上面不需要進行復雜的查詢工作，accept 的時候只是先進先出地接受就好了。所以全連線佇列透過 rskq_accept_head 和 rskq_accept_tail 以連結串列的形式來管理。
+
+和半連線佇列相關的資料物件是 listen_opt，它是 listen_sock 型別的。
+
+因為伺服器端需要在第三次握手時快速地查詢出來第一次握手時留存的 request_sock 物件，所以其實是用了一個 hash 表來管理，就是 struct request_sock    *syn_table[0]。max_qlen_log 和 nr_table_entries 都是和半連線佇列的長度有關。
+
+2.4 接收佇列申請和初始化
+
+瞭解了全/半連線佇列資料結構以後，讓我們再回到 inet_csk_listen_start 函式中。它呼叫了 reqsk_queue_alloc 來申請和初始化 icsk_accept_queue 這個重要物件。
+
+在 reqsk_queue_alloc 這個函式中完成了接收佇列 request_sock_queue 核心物件的建立和初始化。其中包括記憶體申請、半連線佇列長度的計算、全連線佇列頭的初始化等等。
+
+讓我們進入它的原始碼：
+
+開頭定義了一個 struct listen_sock 指標。這個 listen_sock 就是我們平時經常說的半連線佇列。
+
+接下來計算半連線佇列的長度。計算出來了實際大小以後，開始申請記憶體。最後將全連線佇列頭 queue->rskq_accept_head 設定成了 NULL，將半連線佇列掛到了接收佇列 queue 上。
+
+2.5 半連線佇列長度計算
+
+在上一小節，我們提到 reqsk_queue_alloc 函式中計算了半連線佇列的長度，由於這個有點小複雜，所以我們單獨拉一個小節討論這個。
+
+傳進來的 nr_table_entries 在最初呼叫 reqsk_queue_alloc 的地方可以看到，它是核心引數 net.core.somaxconn 和使用者呼叫 listen 時傳入的 backlog 二者之間的較小值。
+
+在這個 reqsk_queue_alloc 函式里，又將會完成三次的對比和計算。
+
+min_t(u32, nr_table_entries, sysctl_max_syn_backlog) 這個是再次和 sysctl_max_syn_backlog 核心物件又取了一次最小值。
+
+max_t(u32, nr_table_entries, 8) 這句保證 nr_table_entries 不能比 8 小，這是用來避免新手使用者傳入一個太小的值導致無法建立連線使用的。
+
+roundup_pow_of_two(nr_table_entries + 1) 是用來上對齊到 2 的整數冪次的。
+
+說到這兒，你可能已經開始頭疼了。確實這樣的描述是有點抽象。咱們換個方法，透過兩個實際的 Case 來計算一下。
+
+假設：某伺服器上核心引數 net.core.somaxconn 為 128， net.ipv4.tcp_max_syn_backlog 為 8192。那麼當使用者 backlog 傳入 5 時，半連線佇列到底是多長呢？
+
+和程式碼一樣，我們還把計算分為四步， 最終結果為 16 。
+
+min (backlog, somaxconn)  = min (5, 128) = 5
+
+min (5, tcp_max_syn_backlog) = min (5, 8192) = 5
+
+max (5, 8) = 8
+
+roundup_pow_of_two (8 + 1) = 16
+
+somaxconn 和 tcp_max_syn_backlog 保持不變，listen 時的 backlog 加大到 512。再算一遍，結果為 256。
+
+min (backlog, somaxconn)  = min (512, 128) = 128
+
+min (128, tcp_max_syn_backlog) = min (128, 8192) = 128
+
+max (128, 8) = 128
+
+roundup_pow_of_two (128 + 1) = 256
+
+算到這裡，我把半連線佇列長度的計算歸納成了一句話， 半連線佇列的長度是 min(backlog, somaxconn, tcp\_max\_syn\_backlog) + 1 再上取整到 2 的冪次，但最小不能小於16。 我用的核心原始碼是 3.10, 你手頭的核心版本可能和這個稍微有些出入。
+
+最後再說一點，為了提升比較效能，核心並沒有直接記錄半連線佇列的長度。而是採用了一種晦澀的方法，只記錄其冪次假設佇列長度為 16，則記錄 max_qlen_log 為 4 （2 的 4 次方等於 16），假設佇列長度為 256，則記錄 max_qlen_log 為 8 （2 的 8 次方等於 256）。大家只要知道這個東東就是為了提升效能的就行了。
+
+最後，總結一下
+
+計算機系的學生就像背八股文一樣記著伺服器端 socket 程式流程：先 bind、再 listen、然後才能 accept。至於為什麼需要先 listen 一下才可以 accpet，似乎我們很少去關注。
+
+透過今天對 listen 原始碼的簡單瀏覽，我們發現 listen 最主要的工作就是 申請和初始化接收佇列，包括全連線佇列和半連線佇列 。 其中全連線佇列是一個連結串列，而半連線佇列由於需要快速的查詢，所以使用的是一個雜湊表（其實半連線佇列更準確的的叫法應該叫半連線雜湊表）。
+
+全/半兩個佇列是三次握手中很重要的兩個資料結構，有了它們伺服器才能正常響應來自客戶端的三次握手。所以伺服器端都需要 listen 一下才行。
+
+除此之外我們還有額外收穫，我們還知道了核心是如何確定全/半連線佇列的長度的。
+
+1.全連線佇列的長度 對於全連線佇列來說，其最大長度是 listen 時傳入的 backlog 和 net.core.somaxconn 之間較小的那個值。 如果需要加大全連線佇列長度，那麼就是調整 backlog 和 somaxconn。
+
+2.半連線佇列的長度 在 listen 的過程中，核心我們也看到了對於半連線佇列來說，其最大長度是 min(backlog, somaxconn, tcp_max_syn_backlog) + 1 再上取整到 2 的冪次，但最小不能小於16。如果需要加大半連線佇列長度，那麼需要一併考慮 backlog，somaxconn 和 tcp_max_syn_backlog 這三個引數。網上任何告訴你修改某一個引數就能提高半連線佇列長度的文章都是錯的。
+
+所以，不放過一個細節，你可能會有意想不到的收穫！ 最後，求再看和轉發，謝謝大家！
+
+寫在最後，由於我的這些知識在公眾號裡文章比較分散，很多人似乎沒有理解到我對知識組織的體系結構。而且圖文也不像影片那樣理解起來更直接。所以我在知識星球上規劃了影片系列課程，包括 硬體原理、記憶體管理、程序管理、檔案系統、網路管理、Golang語言、容器原理、效能觀測、效能最佳化九大部分大約 120 節內容 ，每週更新。加入方式參見 我要開始搞知識星球啦 、 如何才能高效地學習技術,我投“融匯貫通”一票
+
+Github： https://github.com/yanfeizhang/coder-kung-fu 關注公眾號：微信掃描下方二維碼
