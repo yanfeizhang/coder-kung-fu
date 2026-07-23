@@ -5,6 +5,7 @@ import json
 import re
 from pathlib import Path
 from typing import Iterable
+from urllib.parse import urlparse
 
 import requests
 from bs4 import BeautifulSoup
@@ -52,12 +53,14 @@ def fetch_article(url: str) -> tuple[str, str]:
     title = ""
     content = ""
 
-    if "mp.weixin.qq.com" in url:
+    hostname = (urlparse(url).hostname or "").lower()
+
+    if hostname == "mp.weixin.qq.com":
         title_node = soup.select_one("#activity-name")
         content_node = soup.select_one("#js_content")
         title = title_node.get_text(" ", strip=True) if title_node else ""
         content = extract_text(content_node) if content_node else ""
-    elif "zhuanlan.zhihu.com" in url:
+    elif hostname == "zhuanlan.zhihu.com":
         title_node = soup.select_one("h1")
         content_node = soup.select_one("article") or soup.select_one("div.Post-RichTextContainer")
         title = title_node.get_text(" ", strip=True) if title_node else ""
