@@ -11,6 +11,12 @@
 
 本 repo 持续更新ing...  
 
+## 自动抓取与繁中转换
+
+- 使用 `python scripts/build_articles.py --readme README.md --output-dir articles` 可从本页链接清单生成 `articles/` 内容。
+- 转换采用 OpenCC `s2twp` 配置，输出为繁体中文（台湾用语）。
+- GitHub Actions 工作流 `.github/workflows/publish-articles.yml` 会构建 `articles/` 并发布到 GitHub Pages。
+ 
 ---
 **新文置顶:** 
 - [《NVIDIA通用计算首代架构 Tesla 与 CUDA 1.0 剖析》](https://mp.weixin.qq.com/s/q-SU_GCtqZi6OpnAIsINvQ)

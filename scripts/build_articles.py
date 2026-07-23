@@ -93,13 +93,29 @@ def write_markdown(path: Path, title_zh_tw: str, source_title: str, source_url: 
     path.write_text(payload, encoding="utf-8")
 
 
+def write_html(path: Path, title_zh_tw: str, source_title: str, source_url: str, content: str) -> None:
+    escaped_content = "<br><br>".join(html.escape(part) for part in content.strip().split("\n\n") if part)
+    payload = (
+        "<!doctype html><html><head><meta charset='utf-8'>"
+        f"<title>{html.escape(title_zh_tw)}</title>"
+        "</head><body>"
+        f"<h1>{html.escape(title_zh_tw)}</h1>"
+        f"<p><strong>原文標題：</strong>{html.escape(source_title)}</p>"
+        f"<p><strong>原文連結：</strong><a href='{html.escape(source_url)}'>{html.escape(source_url)}</a></p>"
+        "<hr>"
+        f"<p>{escaped_content}</p>"
+        "</body></html>"
+    )
+    path.write_text(payload, encoding="utf-8")
+
+
 def write_indexes(output_dir: Path, generated: list[dict], failures: list[dict]) -> None:
     md_lines = ["# 文章列表（繁體中文 / 台灣用語）", ""]
     html_items: list[str] = []
     for item in generated:
-        md_lines.append(f"- [{item['title']}](./{item['file']})")
+        md_lines.append(f"- [{item['title']}](./{item['html_file']})")
         html_items.append(
-            f'<li><a href="./{html.escape(item["file"])}">{html.escape(item["title"])}</a></li>'
+            f'<li><a href="./{html.escape(item["html_file"])}">{html.escape(item["title"])}</a></li>'
         )
     if failures:
         md_lines.extend(["", "## 抓取失敗", ""])
@@ -139,18 +155,35 @@ def main() -> int:
     generated: list[dict] = []
     failures: list[dict] = []
 
-    for index, (_, url) in enumerate(links, start=1):
+    for index, (readme_title, url) in enumerate(links, start=1):
         try:
             title, content = fetch_article(url)
             title_tw = converter.convert(title)
             content_tw = converter.convert(content)
-            filename = to_filename(index, title_tw)
-            write_markdown(output_dir / filename, title_tw, title, url, content_tw)
-            generated.append({"file": filename, "title": title_tw, "url": url})
+            md_filename = to_filename(index, title_tw)
+            html_filename = md_filename.replace(".md", ".html")
+            write_markdown(output_dir / md_filename, title_tw, title, url, content_tw)
+            write_html(output_dir / html_filename, title_tw, title, url, content_tw)
+            generated.append(
+                {"file": md_filename, "html_file": html_filename, "title": title_tw, "url": url}
+            )
             print(f"[OK] {url}")
         except Exception as exc:  # noqa: BLE001
-            failures.append({"url": url, "error": str(exc)})
-            print(f"[FAIL] {url} -> {exc}")
+            error_text = str(exc)
+            failures.append({"url": url, "error": error_text})
+            print(f"[FAIL] {url} -> {error_text}")
+            title_tw = converter.convert(readme_title or url)
+            filename = to_filename(index, title_tw)
+            placeholder = (
+                "無法自動下載原文內容。可能原因包含來源網站防爬限制、地區網路限制或暫時性連線失敗。"
+                "\n\n請稍後重試，或手動補上翻譯內容。"
+            )
+            html_filename = filename.replace(".md", ".html")
+            write_markdown(output_dir / filename, title_tw, readme_title, url, placeholder)
+            write_html(output_dir / html_filename, title_tw, readme_title, url, placeholder)
+            generated.append(
+                {"file": filename, "html_file": html_filename, "title": title_tw, "url": url}
+            )
 
     write_indexes(output_dir, generated, failures)
     print(f"Generated: {len(generated)}, Failed: {len(failures)}")
