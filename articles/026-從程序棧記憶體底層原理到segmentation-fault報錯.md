@@ -1,3 +1,8 @@
+---
+layout: default
+title: "從程序棧記憶體底層原理到Segmentation fault報錯"
+---
+
 # 從程序棧記憶體底層原理到Segmentation fault報錯
 
 > 原文標題：从进程栈内存底层原理到Segmentation fault报错

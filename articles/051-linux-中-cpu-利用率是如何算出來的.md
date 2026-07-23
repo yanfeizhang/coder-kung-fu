@@ -1,3 +1,8 @@
+---
+layout: default
+title: "Linux 中 CPU 利用率是如何算出來的？"
+---
+
 # Linux 中 CPU 利用率是如何算出來的？
 
 > 原文標題：Linux 中 CPU 利用率是如何算出来的？

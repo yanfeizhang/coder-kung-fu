@@ -1,3 +1,8 @@
+---
+layout: default
+title: "我的服務程式被 SIGPIPE 訊號給搞崩了！"
+---
+
 # 我的服務程式被 SIGPIPE 訊號給搞崩了！
 
 > 原文標題：我的服务程序被 SIGPIPE 信号给搞崩了！

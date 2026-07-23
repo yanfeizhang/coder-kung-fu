@@ -1,3 +1,8 @@
+---
+layout: default
+title: "為什麼新版核心將程序pid管理從bitmap替換成了radix-tree？"
+---
+
 # 為什麼新版核心將程序pid管理從bitmap替換成了radix-tree？
 
 > 原文標題：为什么新版内核将进程pid管理从bitmap替换成了radix-tree？

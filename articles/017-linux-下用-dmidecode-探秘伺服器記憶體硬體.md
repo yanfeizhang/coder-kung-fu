@@ -1,3 +1,8 @@
+---
+layout: default
+title: "Linux 下用 dmidecode 探秘伺服器記憶體硬體"
+---
+
 # Linux 下用 dmidecode 探秘伺服器記憶體硬體
 
 > 原文標題：Linux 下用 dmidecode 探秘服务器内存硬件

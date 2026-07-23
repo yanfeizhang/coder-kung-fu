@@ -13,9 +13,9 @@
 
 ## 自動擷取與繁中轉換
 
-- 使用 `python scripts/build_articles.py --readme README.md --output-dir articles --clean` 可從本頁連結清單產生 `articles/` 內容；來源受限時會尋找公開文章鏡像。
+- 使用 `python scripts/build_articles.py --readme README.md --output-dir articles --clean` 可從本頁文章連結清單產生 Markdown；非文章連結會略過，來源受限時會重試並尋找公開文章鏡像。
 - 轉換採用 OpenCC `s2twp` 設定，輸出為繁體中文（台灣用語）。
-- GitHub Actions 工作流程 `.github/workflows/publish-articles.yml` 會建置 `articles/` 並發佈至 GitHub Pages。
+- GitHub Actions 工作流程 `.github/workflows/publish-articles.yml` 會使用 Jekyll 建置 Markdown，並發佈至 GitHub Pages。
 
 ---
 **新文置顶:** 

@@ -1,3 +1,8 @@
+---
+layout: default
+title: "聊聊C語言中的malloc申請記憶體的內部原理"
+---
+
 # 聊聊C語言中的malloc申請記憶體的內部原理
 
 > 原文標題：聊聊C语言中的malloc申请内存的内部原理

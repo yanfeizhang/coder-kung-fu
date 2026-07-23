@@ -1,3 +1,8 @@
+---
+layout: default
+title: "TLB快取是個神馬鬼，如何檢視TLB miss？"
+---
+
 # TLB快取是個神馬鬼，如何檢視TLB miss？
 
 > 原文標題：TLB缓存是个神马鬼，如何查看TLB miss？

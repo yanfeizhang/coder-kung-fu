@@ -1,3 +1,8 @@
+---
+layout: default
+title: "Linux 中的負載高低和 CPU 開銷並不完全對應"
+---
+
 # Linux 中的負載高低和 CPU 開銷並不完全對應
 
 > 原文標題：Linux 中的负载高低和 CPU 开销并不完全对应

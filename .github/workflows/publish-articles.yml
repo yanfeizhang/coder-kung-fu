@@ -28,12 +28,21 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Build translated articles
-        run: python scripts/build_articles.py --readme README.md --output-dir articles --clean --no-mirror-search
+        run: python scripts/build_articles.py --readme README.md --output-dir articles --clean
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Build Jekyll site
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./
+          destination: ./_site
 
       - name: Upload pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: articles
+          path: _site
 
   deploy:
     needs: build

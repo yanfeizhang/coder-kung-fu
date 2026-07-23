@@ -1,3 +1,8 @@
+---
+layout: default
+title: "Linux 核心“偷吃”了你的記憶體！"
+---
+
 # Linux 核心“偷吃”了你的記憶體！
 
 > 原文標題：Linux 内核“偷吃”了你的内存！

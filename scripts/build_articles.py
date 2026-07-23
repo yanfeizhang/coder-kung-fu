@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import argparse
-import html
 import json
 import re
 from pathlib import Path
@@ -13,6 +12,8 @@ from opencc import OpenCC
 
 LINK_RE = re.compile(r"\[([^\]]+)\]\((https?://[^)\s]+)\)")
 IMAGE_SUFFIXES = (".jpg", ".jpeg", ".png", ".gif", ".svg", ".webp")
+ARTICLE_HOSTS = {"mp.weixin.qq.com", "zhuanlan.zhihu.com"}
+MIRROR_CACHE_PATH = Path(".article-cache/author_mirrors.json")
 HEADERS = {
     "User-Agent": (
         "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
@@ -37,6 +38,7 @@ STATIC_MIRRORS = {
     "nvidia通用计算首代架构tesla与cuda10剖析":
         "https://www.cnblogs.com/wujianming-110117/p/19034994",
 }
+TITLE_SIMPLIFIER = OpenCC("t2s")
 
 
 def extract_links(readme_text: str) -> list[tuple[str, str]]:
@@ -45,6 +47,9 @@ def extract_links(readme_text: str) -> list[tuple[str, str]]:
     for title, url in LINK_RE.findall(readme_text):
         url = url.strip()
         if url.lower().endswith(IMAGE_SUFFIXES):
+            continue
+        hostname = (urlparse(url).hostname or "").lower()
+        if hostname not in ARTICLE_HOSTS:
             continue
         if url in seen:
             continue
@@ -127,7 +132,18 @@ def is_mirror_host(url: str) -> bool:
 
 
 def normalize_title(title: str) -> str:
-    return re.sub(r"[^0-9a-z\u4e00-\u9fff]+", "", title.lower())
+    simplified = TITLE_SIMPLIFIER.convert(title)
+    return re.sub(r"[^0-9a-z\u4e00-\u9fff]+", "", simplified.lower())
+
+
+def titles_match(expected: str, actual: str) -> bool:
+    expected_normalized = normalize_title(expected)
+    actual_normalized = normalize_title(actual)
+    return (
+        bool(expected_normalized)
+        and bool(actual_normalized)
+        and (expected_normalized in actual_normalized or actual_normalized in expected_normalized)
+    )
 
 
 def load_author_mirrors() -> dict[str, str]:
@@ -135,7 +151,7 @@ def load_author_mirrors() -> dict[str, str]:
     if AUTHOR_MIRRORS is not None:
         return AUTHOR_MIRRORS
 
-    cache_path = Path("articles/author_mirrors.json")
+    cache_path = MIRROR_CACHE_PATH
     if cache_path.exists():
         AUTHOR_MIRRORS = json.loads(cache_path.read_text(encoding="utf-8"))
         return AUTHOR_MIRRORS
@@ -204,6 +220,10 @@ def fetch_with_mirror(title: str, source_url: str, search: bool = True) -> tuple
         for _ in range(3 if urlparse(mirror_url).hostname == "kfngxl.cn" else 1):
             try:
                 mirror_title, content = fetch_article(mirror_url)
+                if not titles_match(title, mirror_title):
+                    raise RuntimeError(
+                        f"mirror title mismatch: expected {title!r}, got {mirror_title!r}"
+                    )
                 return mirror_title, content, mirror_url
             except Exception as exc:  # noqa: BLE001
                 mirror_errors.append(f"{mirror_url}: {exc}")
@@ -221,6 +241,10 @@ def to_filename(index: int, title: str) -> str:
 
 def write_markdown(path: Path, title_zh_tw: str, source_title: str, source_url: str, content: str) -> None:
     payload = (
+        "---\n"
+        "layout: default\n"
+        f"title: {json.dumps(title_zh_tw, ensure_ascii=False)}\n"
+        "---\n\n"
         f"# {title_zh_tw}\n\n"
         f"> 原文標題：{source_title}\n\n"
         f"> 原文連結：{source_url}\n\n"
@@ -230,44 +254,24 @@ def write_markdown(path: Path, title_zh_tw: str, source_title: str, source_url: 
     path.write_text(payload, encoding="utf-8")
 
 
-def write_html(path: Path, title_zh_tw: str, source_title: str, source_url: str, content: str) -> None:
-    escaped_content = "<br><br>".join(html.escape(part) for part in content.strip().split("\n\n") if part)
-    payload = (
-        "<!doctype html><html><head><meta charset='utf-8'>"
-        f"<title>{html.escape(title_zh_tw)}</title>"
-        "</head><body>"
-        f"<h1>{html.escape(title_zh_tw)}</h1>"
-        f"<p><strong>原文標題：</strong>{html.escape(source_title)}</p>"
-        f"<p><strong>原文連結：</strong><a href='{html.escape(source_url)}'>{html.escape(source_url)}</a></p>"
-        "<hr>"
-        f"<p>{escaped_content}</p>"
-        "</body></html>"
-    )
-    path.write_text(payload, encoding="utf-8")
-
-
 def write_indexes(output_dir: Path, generated: list[dict], failures: list[dict]) -> None:
-    md_lines = ["# 文章列表（繁體中文 / 台灣用語）", ""]
-    html_items: list[str] = []
+    md_lines = [
+        "---",
+        "layout: default",
+        'title: "文章列表"',
+        "---",
+        "",
+        "# 文章列表（繁體中文 / 台灣用語）",
+        "",
+    ]
     for item in generated:
-        md_lines.append(f"- [{item['title']}](./{item['html_file']})")
-        html_items.append(
-            f'<li><a href="./{html.escape(item["html_file"])}">{html.escape(item["title"])}</a></li>'
-        )
+        md_lines.append(f"- [{item['title']}](./{item['file']})")
     if failures:
         md_lines.extend(["", "## 抓取失敗", ""])
         for item in failures:
             md_lines.append(f"- {item['url']}：{item['error']}")
 
     (output_dir / "index.md").write_text("\n".join(md_lines) + "\n", encoding="utf-8")
-
-    html_doc = (
-        "<!doctype html><html><head><meta charset='utf-8'><title>文章列表</title></head>"
-        "<body><h1>文章列表（繁體中文 / 台灣用語）</h1><ul>"
-        + "".join(html_items)
-        + "</ul></body></html>"
-    )
-    (output_dir / "index.html").write_text(html_doc, encoding="utf-8")
     (output_dir / "failures.json").write_text(
         json.dumps(failures, ensure_ascii=False, indent=2), encoding="utf-8"
     )
@@ -331,11 +335,9 @@ def main() -> int:
                     "無法自動下載原文內容。可能原因包含來源網站防爬限制、地區網路限制或暫時性連線失敗。"
                     "\n\n請稍後重試，或手動補上翻譯內容。"
                 )
-                html_filename = filename.replace(".md", ".html")
                 write_markdown(output_dir / filename, title_tw, readme_title, url, placeholder)
-                write_html(output_dir / html_filename, title_tw, readme_title, url, placeholder)
                 generated.append(
-                    {"file": filename, "html_file": html_filename, "title": title_tw, "url": url}
+                    {"file": filename, "title": title_tw, "url": url}
                 )
                 continue
 
@@ -343,11 +345,9 @@ def main() -> int:
             title_tw = converter.convert(title)
             content_tw = converter.convert(content)
             md_filename = to_filename(index, title_tw)
-            html_filename = md_filename.replace(".md", ".html")
             write_markdown(output_dir / md_filename, title_tw, title, article_url, content_tw)
-            write_html(output_dir / html_filename, title_tw, title, article_url, content_tw)
             generated.append(
-                {"file": md_filename, "html_file": html_filename, "title": title_tw, "url": url}
+                {"file": md_filename, "title": title_tw, "url": url}
             )
             if article_url == url:
                 print(f"[OK] {url}")
@@ -361,11 +361,9 @@ def main() -> int:
                 "無法自動下載原文內容。可能原因包含來源網站防爬限制、地區網路限制或暫時性連線失敗。"
                 "\n\n請稍後重試，或手動補上翻譯內容。"
             )
-            html_filename = filename.replace(".md", ".html")
             write_markdown(output_dir / filename, title_tw, readme_title, url, placeholder)
-            write_html(output_dir / html_filename, title_tw, readme_title, url, placeholder)
             generated.append(
-                {"file": filename, "html_file": html_filename, "title": title_tw, "url": url}
+                {"file": filename, "title": title_tw, "url": url}
             )
 
     write_indexes(output_dir, generated, failures)

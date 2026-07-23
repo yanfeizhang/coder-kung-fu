@@ -1,3 +1,8 @@
+---
+layout: default
+title: "一次簡單的php請求redis會有哪些開銷？"
+---
+
 # 一次簡單的php請求redis會有哪些開銷？
 
 > 原文標題：一次简单的php请求redis会有哪些开销？

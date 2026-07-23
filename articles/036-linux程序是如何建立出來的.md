@@ -1,3 +1,8 @@
+---
+layout: default
+title: "Linux程序是如何建立出來的？"
+---
+
 # Linux程序是如何建立出來的？
 
 > 原文標題：Linux进程是如何创建出来的？

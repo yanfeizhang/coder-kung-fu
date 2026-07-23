@@ -1,3 +1,8 @@
+---
+layout: default
+title: "挑戰Redis單例項記憶體最大極限，“遭遇”NUMA陷阱！"
+---
+
 # 挑戰Redis單例項記憶體最大極限，“遭遇”NUMA陷阱！
 
 > 原文標題：挑战Redis单实例内存最大极限，“遭遇”NUMA陷阱！

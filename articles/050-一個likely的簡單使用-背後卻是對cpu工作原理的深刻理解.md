@@ -1,3 +1,8 @@
+---
+layout: default
+title: "一個likely的簡單使用，背後卻是對CPU工作原理的深刻理解"
+---
+
 # 一個likely的簡單使用，背後卻是對CPU工作原理的深刻理解
 
 > 原文標題：一个likely的简单使用，背后却是对CPU工作原理的深刻理解

@@ -1,3 +1,8 @@
+---
+layout: default
+title: "NVIDIA通用計算首代架構 Tesla 與 CUDA 1.0 剖析"
+---
+
 # NVIDIA通用計算首代架構 Tesla 與 CUDA 1.0 剖析
 
 > 原文標題：NVIDIA通用计算首代架构 Tesla 与 CUDA 1.0 剖析

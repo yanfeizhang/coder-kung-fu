@@ -1,0 +1,12 @@
+title: 開發內功修煉文章
+description: 繁體中文與台灣用語版本的技術文章
+theme: minima
+markdown: kramdown
+show_downloads: false
+exclude:
+  - .article-cache
+  - .github
+  - articles/failures.json
+  - README.md
+  - requirements.txt
+  - scripts
