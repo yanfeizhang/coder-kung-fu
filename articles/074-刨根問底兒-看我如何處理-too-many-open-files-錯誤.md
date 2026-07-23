@@ -25,79 +25,215 @@ title: "刨根問底兒，看我如何處理 Too many open files 錯誤！"
 
 另外一次是重啟機器完了之後發現無法 ssh 登入了。後來找運維工程部的同學報障以後才算是修復。最終發現是因為 hard nofile 比 fs.nr_open 高了，直接導致無法登陸。（其實我把 fs.nr_open 加大過，但是用的是 echo 命令 修改的。系統一重啟，還原了）。
 
-一、找到原始碼
+### 一、找到原始碼
 
 對於這三個傢伙，我真的是無法言語更多了。所以我下定了決心，一定要把它們徹底搞清楚。怎麼搞？ 那沒有比把它的原始碼扒出來能看的更準確了。我們就拿建立 socket 來舉例，首先找到 socket 系統呼叫的入口
 
+```
+//file: net/socket.c
+SYSCALL_DEFINE3(socket, int, family, int, type, int, protocol)
+{
+    retval = sock_map_fd(sock, flags & (O_CLOEXEC | O_NONBLOCK));
+    if (retval < 0)
+        goto out_release;
+}
+```
+
 我們看到 socket 呼叫 sock_map_fd 來建立相關核心物件。接著我們再進入 sock_map_fd 瞧瞧。
+
+```
+//file: net/socket.c
+static int sock_map_fd(struct socket *sock, int flags)
+{
+    struct file *newfile;
+
+    //在這裡會判斷開啟檔案數是否超過 soft nofile 和 fs.nr_open
+    //獲取 fd 控制代碼號
+    int fd = get_unused_fd_flags(flags);
+    if (unlikely(fd < 0))
+        return fd;
+
+    //在這裡會判斷開啟檔案數是否超過 fs.file-max
+    //建立 sock_alloc_file物件
+    newfile = sock_alloc_file(sock, flags, NULL);
+    if (likely(!IS_ERR(newfile))) {
+        fd_install(fd, newfile);
+        return fd;
+    }
+
+    put_unused_fd(fd);
+    return PTR_ERR(newfile);
+}
+```
 
 為什麼建立一個socket又要申請 fd，又要申請 sock_alloc_file 呢？我們看一個程序開啟檔案時的核心資料結構圖就明白了
 
 結合上圖，就能輕鬆理解這兩個函式的作用
 
-get_unused_fd_flags：申請 fd，這只是一個在找一個可用的陣列下標而已
+- get_unused_fd_flags：申請 fd，這只是一個在找一個可用的陣列下標而已
 
-sock_alloc_file：申請真正的 file 核心物件
+- sock_alloc_file：申請真正的 file 核心物件
 
-二、找到程序級限制 nofile 和 fs.nr_open
+### 二、找到程序級限制 nofile 和 fs.nr_open
 
 接下來，我們再回到最大檔案數量的判斷上。這裡我直接把結論丟擲來。get_unused_fd_flags 中判斷了 nofile、和 fs.nr_open。如果超過了這兩個引數，就會報錯。 請看！
 
+```
+//file: fs/file.c
+int get_unused_fd_flags(unsigned flags)
+{
+    // RLIMIT_NOFILE 是 limits.conf 中配置的 nofile
+    return __alloc_fd(
+        current->files,
+        0,
+        rlimit(RLIMIT_NOFILE),
+        flags
+    );
+}
+```
+
 在get_unused_fd_flags 中，呼叫了 rlimit(RLIMIT_NOFILE)。這個是讀取的 limits.conf 中配置的 soft nofile，程式碼如下：
+
+```
+//file: include/linux/sched.h
+static inline unsigned long task_rlimit(const struct task_struct *tsk,
+        unsigned int limit)
+{
+    return ACCESS_ONCE(tsk->signal->rlim[limit].rlim_cur);
+}
+```
 
 透過當前程序描述訪問到 rlim[RLIMIT_NOFILE]，這個物件的 rlim_cur 是 soft nofile（rlim_max 對應 hard nofile ）。
 
 緊接著讓我們進入 \_\_alloc_fd() 中來
 
+```
+//file: include/uapi/asm-generic/errno-base.h
+#define    EMFILE        24    /* Too many open files */
+
+int __alloc_fd(struct files_struct *files,
+           unsigned start, unsigned end, unsigned flags)
+{
+    ...
+    error = -EMFILE;
+
+    //看要分配的檔案號是否超過 end（limits.conf 中的 nofile）
+    if (fd >= end)
+        goto out;
+
+    error = expand_files(files, fd);
+    if (error < 0)
+        goto out;
+    ...
+}
+```
+
 在\_\_alloc_fd() 中會判斷要分配的控制代碼號是不是超過了 limits.conf 中 nofile 的限制。fd 是當前程序相關的，是一個從 0 開始的整數。如果超限，就報錯 EMFILE （Too many open files）。
+
+> 這裡注意個小細節，那就是程序裡的 fd 是一個從 0 開始的整數。只要確保分配出去的 fd 編號不超過 limits.conf 中 nofile，就能保證該程序開啟的檔案總數不會超過這個數。
 
 接著我們看到呼叫又會進入 expand_files：
 
+```
+static int expand_files(struct files_struct *files, int nr)
+{
+    //2. 判斷開啟檔案數是否超過 fs.nr_open
+    if (nr >= sysctl_nr_open)
+        return -EMFILE;
+}
+```
+
 在 expand_files 我們看到，又到 nr (就是 fd 編號) 和 fs.nr_open 相比較了。超過這個限制，返回錯誤 EMFILE （Too many open files）。
 
-由上可見，無論是和 fs.nr_open，還是和 soft nofile 比較，都用的是 當前程序 的檔案描述符序號在比較的，所以這兩個引數都是程序級別的。
+由上可見，無論是和 fs.nr_open，還是和 soft nofile 比較，都用的是當前程序的檔案描述符序號在比較的，所以這兩個引數都是程序級別的。
 
 有意思的是和這兩個引數的比較幾乎是前後腳進行的，所以它兩的作用也基本一樣。Linux之所以分兩個引數來控制，那是因為 fs.nr_open 是系統全域性的，而 soft nofile 則可以分使用者來分別控制。
 
 所以，現在我們可以得出第一個結論。
 
-結論1：soft nofile 和 fs.nr_open的作用一樣，它兩都是限制的單個程序的最大檔案數量。區別是 soft nofile 可以按使用者來配置，而 fs.nr_open 所有使用者只能配一個 。
+結論1：soft nofile 和 fs.nr_open的作用一樣，它兩都是限制的單個程序的最大檔案數量。區別是 soft nofile 可以按使用者來配置，而 fs.nr_open 所有使用者只能配一個。
 
-三、找到系統級限制 fs.nr_open
+### 三、找到系統級限制 fs.nr_open
 
 我們在回過頭來看 sock_map_fd 中呼叫的另外一個函式 sock_alloc_file，在這個函式里我們發現它會和 fs.file-max 這個系統引數來比較。用啥比的呢？
 
+```
+//file: fs/file_table.c
+struct file *sock_alloc_file(struct socket *sock, int flags, const char *dname)
+{
+    file = alloc_file(&path, FMODE_READ | FMODE_WRITE,
+      &socket_file_ops);
+}
+
+struct file *alloc_file(struct path *path, fmode_t mode,
+        const struct file_operations *fop)
+{
+    file = get_empty_filp();
+    ...
+}
+
+struct file *get_empty_filp(void)
+{
+    //files_stat.max_files就是 fs.file-max引數
+    if (get_nr_files() >= files_stat.max_files
+        && !capable(CAP_SYS_ADMIN) //注意這裡root賬號並不受限制
+        ) {
+    }
+}
+```
+
 可見是用 get_nr_files() 來和 fs.file-max來比較的。根據該函式的註釋我們能看到它是當前系統開啟的檔案描述符總量。如下：
 
-另外注意下 !capable(CAP_SYS_ADMIN) 這行。看完這句，我才恍然大悟， 原來 file-max 這個引數只限制非 root 使用者 。開篇中我提到的檔案開啟過多時無法使用 ps，kill 等命令，是因為我用的非root賬號操作的。哎，下次再遇到這種檔案直接用 root 去 kill 就行了。之前竟然丟臉地採用了重啟機器大法。。
+```
+/*
+ * Return the total number of open files in the system
+ */
+static long get_nr_files(void)
+{
+    ...
+```
 
-所以現在我們可以得出另一個結論了。 結論2：fs.file-max: 整個系統上可開啟的最大檔案數，但不限制 root 使用者
+另外注意下`!capable(CAP_SYS_ADMIN)`這行。看完這句，我才恍然大悟，原來 file-max 這個引數只限制非 root 使用者。開篇中我提到的檔案開啟過多時無法使用 ps，kill 等命令，是因為我用的非root賬號操作的。哎，下次再遇到這種檔案直接用 root 去 kill 就行了。之前竟然丟臉地採用了重啟機器大法。。
 
-總結一下
+所以現在我們可以得出另一個結論了。
+結論2：fs.file-max: 整個系統上可開啟的最大檔案數，但不限制 root 使用者
+
+### 總結一下
 
 我們總結一下，其實在 Linux 上能開啟多少個檔案，限制有兩種：
 
-第一種，程序級別的，限制的是單個程序上可開啟的檔案數。具體引數是 soft nofile 和 fs.nr_open。 它們兩個的區別是 soft nofile 可以不同使用者配置不同的值。而 fs.nr_open 在一臺 Linux 上只能配一次。
+- 第一種，程序級別的，限制的是單個程序上可開啟的檔案數。具體引數是 soft nofile 和 fs.nr_open。 它們兩個的區別是 soft nofile 可以不同使用者配置不同的值。而 fs.nr_open 在一臺 Linux 上只能配一次。
 
-第二種，系統級別的，整個系統上可開啟的最大檔案數，具體引數是fs.file-max。但是這個引數不限制 root 使用者。
+- 第二種，系統級別的，整個系統上可開啟的最大檔案數，具體引數是fs.file-max。但是這個引數不限制 root 使用者。
 
 另外這幾個引數之間還有耦合關係，因此還要注意以下三點：
 
-1、如果你想加大 soft nofile,  那麼 hard nofile 也需要一起調整。因為如果 hard nofile 設定的低， 你的 soft nofile 設定的再高都沒用，實際生效的值會按二者裡最低的來。
+- 1、如果你想加大 soft nofile, 那麼 hard nofile 也需要一起調整。因為如果 hard nofile 設定的低， 你的 soft nofile 設定的再高都沒用，實際生效的值會按二者裡最低的來。
 
-2、如果你加大了 hard nofile，那麼 fs.nr_open 也都需要跟著一起調整。 如果不小心把 hard nofile 設定的比 fs.nr_open 大了，後果比較嚴重。會導致該使用者無法登陸。如果設定的是 * 的話，那麼所有的使用者都無法登陸。
+- 2、如果你加大了 hard nofile，那麼 fs.nr_open 也都需要跟著一起調整。如果不小心把 hard nofile 設定的比 fs.nr_open 大了，後果比較嚴重。會導致該使用者無法登陸。如果設定的是 * 的話，那麼所有的使用者都無法登陸。
 
-3、還要注意如果你加大了 fs.nr_open，但是用的是 echo "xx" > ../fs/nr_open 的方式，剛改完你可能覺得沒問題。只要機器一重啟你的 fs.nr_open 設定就會失效，還是會無法登陸。
+- 3、還要注意如果你加大了 fs.nr_open，但是用的是 echo "xx" > ../fs/nr_open 的方式，剛改完你可能覺得沒問題。只要機器一重啟你的 fs.nr_open 設定就會失效，還是會無法登陸。
 
 假如你想讓你的程序可以開啟 100 萬個檔案描述符，我覺得比較穩妥點的修改方法是乾脆都直接用 conf 檔案的方式來改。這樣比較統一，也比較安全。
+
+```
+# vi /etc/sysctl.conf
+fs.nr_open=1100000  //要比 hard nofile 大一點
+fs.file-max=1100000 //多留點buffer
+# sysctl -p
+# vi /etc/security/limits.conf
+*  soft  nofile  1000000
+*  hard  nofile  1000000
+```
 
 透過這種方式修改，你就可以繞過飛哥踩過的坑了。
 
 另外飛哥建立了一個技術群，歡迎大家加入，一起成長。先加我微信(zhangyanfei748527), 我來拉入群！
 
-寫在最後，由於我的這些知識在公眾號裡文章比較分散，很多人似乎沒有理解到我對知識組織的體系結構。而且圖文也不像影片那樣理解起來更直接。所以我在知識星球上規劃了影片系列課程，包括 硬體原理、記憶體管理、程序管理、檔案系統、網路管理、Golang語言、容器原理、效能觀測、效能最佳化九大部分大約 120 節內容 ，每週更新。加入方式參見 我要開始搞知識星球啦 、 如何才能高效地學習技術,我投“融匯貫通”一票
+寫在最後，由於我的這些知識在公眾號裡文章比較分散，很多人似乎沒有理解到我對知識組織的體系結構。而且圖文也不像影片那樣理解起來更直接。所以我在知識星球上規劃了影片系列課程，包括硬體原理、記憶體管理、程序管理、檔案系統、網路管理、Golang語言、容器原理、效能觀測、效能最佳化九大部分大約 120 節內容，每週更新。加入方式參見[我要開始搞知識星球啦](https://mp.weixin.qq.com/s/_8ux274sY-As__Xwoqmewg)、[如何才能高效地學習技術,我投“融匯貫通”一票](https://mp.weixin.qq.com/s/z82z9jqnt08gBLYGxLHY2g)
 
-Github： https://github.com/yanfeizhang/coder-kung-fu 關注公眾號：微信掃描下方二維碼
+Github：[https://github.com/yanfeizhang/coder-kung-fu](https://github.com/yanfeizhang/coder-kung-fu)
+關注公眾號：微信掃描下方二維碼
 
 我打造了一套更為完整的影片課程。總共包括了硬體原理、記憶體管理、程序管理、網路管理、檔案系統、容器原理、效能觀測、效能最佳化、呼叫原理、等幾個大部分的內容。
 

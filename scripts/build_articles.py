@@ -3,7 +3,6 @@ import argparse
 import json
 import re
 from pathlib import Path
-from typing import Iterable
 from urllib.parse import parse_qs, unquote, urlparse
 
 import requests
@@ -11,8 +10,10 @@ from bs4 import BeautifulSoup
 from opencc import OpenCC
 
 LINK_RE = re.compile(r"\[([^\]]+)\]\((https?://[^)\s]+)\)")
+SECTION_RE = re.compile(r"^#{1,6}\s*([一二三四五六七八九十]+)、")
 IMAGE_SUFFIXES = (".jpg", ".jpeg", ".png", ".gif", ".svg", ".webp")
 ARTICLE_HOSTS = {"mp.weixin.qq.com", "zhuanlan.zhihu.com"}
+ALLOWED_SECTIONS = set("一二三四五六七八九")
 MIRROR_CACHE_PATH = Path(".article-cache/author_mirrors.json")
 HEADERS = {
     "User-Agent": (
@@ -37,6 +38,10 @@ AUTHOR_MIRRORS: dict[str, str] | None = None
 STATIC_MIRRORS = {
     "nvidia通用计算首代架构tesla与cuda10剖析":
         "https://www.cnblogs.com/wujianming-110117/p/19034994",
+    "磁盘分区也是隐含了技术技巧的":
+        "https://developer.cloud.tencent.com/article/1964451",
+    "我们怎么解决机械硬盘既慢又容易坏的问题":
+        "https://www.cnblogs.com/kfngxl/p/13924083.html",
 }
 TITLE_SIMPLIFIER = OpenCC("t2s")
 
@@ -44,28 +49,76 @@ TITLE_SIMPLIFIER = OpenCC("t2s")
 def extract_links(readme_text: str) -> list[tuple[str, str]]:
     links: list[tuple[str, str]] = []
     seen: set[str] = set()
-    for title, url in LINK_RE.findall(readme_text):
-        url = url.strip()
-        if url.lower().endswith(IMAGE_SUFFIXES):
+    current_section: str | None = None
+    for line in readme_text.splitlines():
+        section_match = SECTION_RE.match(line.strip())
+        if section_match:
+            current_section = section_match.group(1)
+        if current_section not in ALLOWED_SECTIONS:
             continue
-        hostname = (urlparse(url).hostname or "").lower()
-        if hostname not in ARTICLE_HOSTS:
-            continue
-        if url in seen:
-            continue
-        seen.add(url)
-        links.append((title.strip(), url))
+        for title, url in LINK_RE.findall(line):
+            url = url.strip()
+            if url.lower().endswith(IMAGE_SUFFIXES):
+                continue
+            hostname = (urlparse(url).hostname or "").lower()
+            if hostname not in ARTICLE_HOSTS:
+                continue
+            if url in seen:
+                continue
+            seen.add(url)
+            links.append((title.strip(), url))
     return links
 
 
-def extract_text(node: BeautifulSoup) -> str:
+def extract_markdown(node: BeautifulSoup) -> str:
     for tag in node.select("script,style,noscript"):
         tag.decompose()
-    blocks: Iterable[str] = (
-        item.get_text(" ", strip=True) for item in node.find_all(["h1", "h2", "h3", "p", "li"])
-    )
-    text = "\n\n".join(x for x in blocks if x) or node.get_text("\n", strip=True)
-    return "\n".join(line.rstrip() for line in text.splitlines())
+
+    def render_inline(item: object) -> str:
+        if not getattr(item, "name", None):
+            return str(item).replace("\u00a0", " ").strip()
+        element = item
+        if element.name == "br":
+            return "\n"
+        text = "".join(render_inline(child) for child in element.children)
+        text = re.sub(r"[ \t]+", " ", text).strip()
+        if element.name == "a" and element.get("href") and text:
+            return f"[{text}]({element['href']})"
+        if element.name == "code" and text:
+            return f"`{text}`"
+        return text
+
+    blocks: list[str] = []
+    block_tags = {"h1", "h2", "h3", "h4", "h5", "h6", "p", "li", "pre", "blockquote"}
+    for element in node.find_all(block_tags):
+        if element.find_parent(block_tags):
+            continue
+        if element.name.startswith("h"):
+            text = render_inline(element)
+            if text:
+                level = min(int(element.name[1]) + 1, 6)
+                blocks.append(f"{'#' * level} {text}")
+        elif element.name == "li":
+            text = render_inline(element)
+            if text:
+                blocks.append(f"- {text}")
+        elif element.name == "pre":
+            text = element.get_text("\n", strip=False).strip("\n")
+            if text:
+                blocks.append(f"```\n{text}\n```")
+        elif element.name == "blockquote":
+            text = render_inline(element)
+            if text:
+                blocks.append("\n".join(f"> {line}" for line in text.splitlines()))
+        else:
+            text = render_inline(element)
+            if text:
+                blocks.append(text)
+
+    if not blocks:
+        return node.get_text("\n", strip=True)
+    markdown = "\n\n".join(block.rstrip() for block in blocks).strip()
+    return "\n".join(line.rstrip() for line in markdown.splitlines())
 
 
 def fetch_article(url: str) -> tuple[str, str]:
@@ -82,12 +135,12 @@ def fetch_article(url: str) -> tuple[str, str]:
         title_node = soup.select_one("#activity-name")
         content_node = soup.select_one("#js_content")
         title = title_node.get_text(" ", strip=True) if title_node else ""
-        content = extract_text(content_node) if content_node else ""
+        content = extract_markdown(content_node) if content_node else ""
     elif hostname.endswith("cnblogs.com"):
         title_node = soup.select_one(".postTitle") or soup.select_one("h1")
         content_node = soup.select_one("#cnblogs_post_body")
         title = title_node.get_text(" ", strip=True) if title_node else ""
-        content = extract_text(content_node) if content_node else ""
+        content = extract_markdown(content_node) if content_node else ""
     elif hostname == "cloud.tencent.com":
         title_node = soup.select_one("h1")
         content_node = (
@@ -96,27 +149,27 @@ def fetch_article(url: str) -> tuple[str, str]:
             or soup.select_one("article")
         )
         title = title_node.get_text(" ", strip=True) if title_node else ""
-        content = extract_text(content_node) if content_node else ""
+        content = extract_markdown(content_node) if content_node else ""
     elif hostname == "blog.csdn.net":
         title_node = soup.select_one("h1")
         content_node = soup.select_one("#content_views") or soup.select_one("article")
         title = title_node.get_text(" ", strip=True) if title_node else ""
-        content = extract_text(content_node) if content_node else ""
+        content = extract_markdown(content_node) if content_node else ""
     elif hostname == "kfngxl.cn":
         title_node = soup.select_one(".article-title") or soup.select_one("h1")
         content_node = soup.select_one("article.article-content")
         title = title_node.get_text(" ", strip=True) if title_node else ""
-        content = extract_text(content_node) if content_node else ""
+        content = extract_markdown(content_node) if content_node else ""
     elif hostname == "zhuanlan.zhihu.com":
         title_node = soup.select_one("h1")
         content_node = soup.select_one("article") or soup.select_one("div.Post-RichTextContainer")
         title = title_node.get_text(" ", strip=True) if title_node else ""
-        content = extract_text(content_node) if content_node else ""
+        content = extract_markdown(content_node) if content_node else ""
     else:
         title_node = soup.select_one("h1") or soup.select_one("title")
         body = soup.select_one("article") or soup.select_one("main") or soup.select_one("body")
         title = title_node.get_text(" ", strip=True) if title_node else ""
-        content = extract_text(body) if body else ""
+        content = extract_markdown(body) if body else ""
 
     if not title:
         title = url
@@ -266,11 +319,6 @@ def write_indexes(output_dir: Path, generated: list[dict], failures: list[dict])
     ]
     for item in generated:
         md_lines.append(f"- [{item['title']}](./{item['file']})")
-    if failures:
-        md_lines.extend(["", "## 抓取失敗", ""])
-        for item in failures:
-            md_lines.append(f"- {item['url']}：{item['error']}")
-
     (output_dir / "index.md").write_text("\n".join(md_lines) + "\n", encoding="utf-8")
     (output_dir / "failures.json").write_text(
         json.dumps(failures, ensure_ascii=False, indent=2), encoding="utf-8"

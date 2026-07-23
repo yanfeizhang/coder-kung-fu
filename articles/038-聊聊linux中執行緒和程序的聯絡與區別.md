@@ -19,19 +19,57 @@ title: "聊聊Linux中執行緒和程序的聯絡與區別！"
 
 我今天就給大家從 Linux 核心實現的角度，給大家深度對比下程序和執行緒。
 
-一、執行緒的建立方法
+### 一、執行緒的建立方法
 
 在 Redis 6.0 以上的版本里，也開始支援使用多執行緒來提供核心服務，我們就以它為例。
 
 在 Redis 主執行緒啟動以後，會呼叫 initThreadedIO 來建立多個 io 執行緒。
 
+> redis 原始碼地址：[https://github.com/redis/redis](https://github.com/redis/redis)
+
+```
+//file:src/networking.c
+void initThreadedIO(void) {
+    //開始 io 執行緒的建立
+    for (int i = 0; i < server.io_threads_num; i++) {
+        pthread_t tid;
+        pthread_create(&tid,NULL,IOThreadMain,(void*)(long)i)
+        io_threads[i] = tid;
+    }
+}
+```
+
 建立執行緒具體呼叫的是 pthread_create 函式，pthread_create 是在 glibc 庫中實現的。在 glibc 庫中，pthread_create 函式的實現呼叫路徑是 \_\_pthread_create_2_1 -> create_thread。 其中 create_thread 這個函式比較重要，它設定了建立執行緒時使用的各種 flag 標記。
+
+```
+//file:nptl/sysdeps/pthread/createthread.c
+static int
+create_thread (struct pthread *pd, ...)
+{
+    int clone_flags = (CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGNAL
+             | CLONE_SETTLS | CLONE_PARENT_SETTID
+             | CLONE_CHILD_CLEARTID | CLONE_SYSVSEM
+             | 0);
+
+    int res = do_clone (pd, attr, clone_flags, start_thread,
+                  STACK_VARIABLES_ARGS, 1);
+    ...
+}
+```
 
 在上面的程式碼中，傳入引數中的各個 flag 標記是非常關鍵的。這裡我們先知道一下傳入了 CLONE_VM、CLONE_FS、CLONE_FILES 等標記就行了，後面我們會講核心中針對這些引數做的特殊處理。
 
 接下來的 do_clone 最終會呼叫一段彙編程式，在彙編裡進入 clone 系統呼叫，之後會進入核心中進行處理。
 
-二、核心中對執行緒的表示
+```
+//file:sysdeps/unix/sysv/linux/i386/clone.S
+ENTRY (BP_SYM (__clone))
+    ...
+    movl    $SYS_ify(clone),%eax
+    ...
+```
+
+### 二、核心中對執行緒的表示
 
 在開始介紹執行緒的建立過程之前，先給大家看看核心中表示執行緒的資料結構。
 
@@ -39,13 +77,58 @@ title: "聊聊Linux中執行緒和程序的聯絡與區別！"
 
 我們來看 task_struct 具體的定義，它位於 include/linux/sched.h
 
-這個資料結構已經在上一篇文章 《Linux程序是如何建立出來的？》 中，我們詳細介紹過了。
+```
+//file:include/linux/sched.h
+struct task_struct {
+    //1.1 task狀態
+    volatile long state;
+
+    //1.2 程序執行緒的pid
+    pid_t pid;
+    pid_t tgid;
+
+    //1.3 task樹關係：父程序、子程序、兄弟程序
+    struct task_struct __rcu *parent;
+    struct list_head children;
+    struct list_head sibling;
+    struct task_struct *group_leader;
+
+    //1.4 task排程優先順序
+    int prio, static_prio, normal_prio;
+    unsigned int rt_priority;
+
+    //1.5 地址空間
+    struct mm_struct *mm, *active_mm;
+
+    //1.6 檔案系統資訊（當前目錄等）
+    struct fs_struct *fs;
+
+    //1.7 開啟的檔案資訊
+    struct files_struct *files;
+
+    //1.8 namespaces
+    struct nsproxy *nsproxy;
+
+    ...
+}
+```
+
+這個資料結構已經在上一篇文章[《Linux程序是如何建立出來的？》](https://mp.weixin.qq.com/s/ftrSkVvOr6s5t0h4oq4I2w)中，我們詳細介紹過了。
 
 對於執行緒來講，所有的欄位都是和程序一樣的（本來就是一個結構體來表示的）。包括狀態、pid、task 樹關係、地址空間、檔案系統資訊、開啟的檔案資訊等等欄位，執行緒也都有。
 
-這也就是我前面說的，程序和執行緒的相同點要遠遠大於不同點，本質上是同一個東西，都是一個 task_struct ！正因為程序執行緒如此之相像，所以在 Linux 下的執行緒還有另外一個名字，叫 輕量級程序 。至於說輕量在哪兒，稍後我們再說。
+這也就是我前面說的，程序和執行緒的相同點要遠遠大於不同點，本質上是同一個東西，都是一個 task_struct ！正因為程序執行緒如此之相像，所以在 Linux 下的執行緒還有另外一個名字，叫輕量級程序。至於說輕量在哪兒，稍後我們再說。
 
 這裡我們稍微說一下 pid 和 tgid 這兩個欄位。在 Linux 中，每一個 task_struct 都需要被唯一的標識，它的 pid 就是唯一標識號。
+
+```
+//file:include/linux/sched.h
+struct task_struct {
+    ......
+    pid_t pid;
+    pid_t tgid;
+}
+```
 
 對於程序來說，這個 pid 就是我們平時常說的程序 pid。
 
@@ -53,67 +136,188 @@ title: "聊聊Linux中執行緒和程序的聯絡與區別！"
 
 這樣核心透過 tgid 可以知道執行緒屬於哪個程序。
 
-三、執行緒建立過程
+### 三、執行緒建立過程
 
 要想知道程序和執行緒的區別到底在哪兒，我們從執行緒的建立過程來詳細看一下。
 
-3.1 回顧程序建立
+#### 3.1 回顧程序建立
 
-在 《Linux程序是如何建立出來的？》 一文中我們瞭解了程序的建立過程。 事實上，程序執行緒建立的時候，使用的函式看起來不一樣。但實際在底層實現上，最終都是使用同一個函式來實現的。
+在[《Linux程序是如何建立出來的？》](https://mp.weixin.qq.com/s/ftrSkVvOr6s5t0h4oq4I2w)一文中我們瞭解了程序的建立過程。
+事實上，程序執行緒建立的時候，使用的函式看起來不一樣。但實際在底層實現上，最終都是使用同一個函式來實現的。
 
-我們再簡單回顧一下建立程序時 fork 系統呼叫的原始碼，fork 呼叫主要就是執行了 do_fork 函式。 注意：fork 函式呼叫 do_fork 的傳的引數分別是SIGCHLD、0,0,NULL,NULL 。
+我們再簡單回顧一下建立程序時 fork 系統呼叫的原始碼，fork 呼叫主要就是執行了 do_fork 函式。注意：fork 函式呼叫 do_fork 的傳的引數分別是SIGCHLD、0,0,NULL,NULL。
+
+```
+//file:kernel/fork.c
+SYSCALL_DEFINE0(fork)
+{
+    return do_fork(SIGCHLD, 0, 0, NULL, NULL);
+}
+```
 
 do_fork 函式又呼叫 copy_process 完成程序的建立。
 
-3.2 執行緒的建立
+```
+//file:kernel/fork.c
+long do_fork(...)
+{
+    //複製一個 task_struct 出來
+    struct task_struct *p;
+    p = copy_process(clone_flags, ...);
+    ...
+}
+```
+
+#### 3.2 執行緒的建立
 
 我們在本文第一小節裡介紹到 lib 庫函式 pthread_create 會呼叫到 clone 系統呼叫，為其傳入了一組 flag。
 
+```
+//file:nptl/sysdeps/pthread/createthread.c
+static int
+create_thread (struct pthread *pd, ...)
+{
+    int clone_flags = (CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGNAL
+             | CLONE_SETTLS | CLONE_PARENT_SETTID
+             | CLONE_CHILD_CLEARTID | CLONE_SYSVSEM
+             | 0);
+
+    int res = do_clone (pd, attr, clone_flags, ...);
+    ...
+}
+```
+
 好，我們找到 clone 系統呼叫的實現。
+
+```
+//file:kernel/fork.c
+SYSCALL_DEFINE5(clone, ......)
+{
+    return do_fork(clone_flags, newsp, 0, parent_tidptr, child_tidptr);
+}
+```
 
 同樣，do_fork 函式還是會執行到 copy_process 來完成實際的建立。
 
-3.3 程序執行緒建立異同
+#### 3.3 程序執行緒建立異同
 
 可見和建立程序時使用的 fork 系統呼叫相比，建立執行緒的 clone 系統呼叫幾乎和 fork 差不多，也一樣使用的是核心裡的 do_fork 函式，最後走到 copy_process 來完整建立。
 
-不過建立過程的 區別是二者在呼叫 do_fork 時傳入的 clone_flags 裡的標記不一樣！ 。
+不過建立過程的區別是二者在呼叫 do_fork 時傳入的 clone_flags 裡的標記不一樣！。
 
-建立程序時的 flag：僅有一個 SIGCHLD
+- 建立程序時的 flag：僅有一個 SIGCHLD
 
-建立執行緒時的 flag：包括 CLONE_VM、CLONE_FS、CLONE_FILES、CLONE_SIGNAL、CLONE_SETTLS、CLONE_PARENT_SETTID、CLONE_CHILD_CLEARTID、CLONE_SYSVSEM。
+- 建立執行緒時的 flag：包括 CLONE_VM、CLONE_FS、CLONE_FILES、CLONE_SIGNAL、CLONE_SETTLS、CLONE_PARENT_SETTID、CLONE_CHILD_CLEARTID、CLONE_SYSVSEM。
 
 關於這些 flag 的含義，我們選幾個關鍵的做一個簡單的介紹，後面介紹 do_fork 細節的時候會再次涉及到。
 
-CLONE_VM: 新 task 和父程序共享地址空間
+- CLONE_VM: 新 task 和父程序共享地址空間
 
-CLONE_FS：新 task 和父程序共享檔案系統資訊
+- CLONE_FS：新 task 和父程序共享檔案系統資訊
 
-CLONE_FILES：新 task 和父程序共享檔案描述符表
+- CLONE_FILES：新 task 和父程序共享檔案描述符表
 
 這些 flag 會對 task_struct 產生啥影響，我們接著看接下來的內容。
 
-四、揭秘 do_fork 系統呼叫
+### 四、揭秘 do_fork 系統呼叫
 
 在本節中我們以動態的視角來看一下執行緒的建立過程.
 
 前面我們看到，程序和執行緒建立都是呼叫核心中的 do_fork 函式來執行的。在 do_fork 的實現中，核心是一個 copy_process 函式，它以複製父程序（執行緒）的方式來生成一個新的 task_struct 出來。
 
+```
+//file:kernel/fork.c
+long do_fork(unsigned long clone_flags, ...)
+{
+    //複製一個 task_struct 出來
+    struct task_struct *p;
+    p = copy_process(clone_flags, stack_start, stack_size,
+             child_tidptr, NULL, trace);
+
+    //子任務加入到就緒佇列中去，等待排程器排程
+    wake_up_new_task(p);
+    ...
+}
+```
+
 在建立完畢後，呼叫 wake_up_new_task 將新建立的任務新增到就緒佇列中，等待排程器排程執行。這個程式碼很長，我對其進行了一定程度的精簡。
+
+```
+//file:kernel/fork.c
+static struct task_struct *copy_process(...)
+{
+    //4.1 複製程序 task_struct 結構體
+    struct task_struct *p;
+    p = dup_task_struct(current);
+    ...
+
+    //4.2 複製 files_struct
+    retval = copy_files(clone_flags, p);
+
+    //4.3 複製 fs_struct
+    retval = copy_fs(clone_flags, p);
+
+    //4.4 複製 mm_struct
+    retval = copy_mm(clone_flags, p);
+
+    //4.5 複製程序的名稱空間 nsproxy
+    retval = copy_namespaces(clone_flags, p);
+
+    //4.6 申請 pid && 設定程序號
+    pid = alloc_pid(p->nsproxy->pid_ns);
+    p->pid = pid_nr(pid);
+    p->tgid = p->pid;
+    if (clone_flags & CLONE_THREAD)
+        p->tgid = current->tgid;
+
+    ......
+}
+```
 
 可見，copy_process 先是複製了一個新的 task_struct 出來，然後呼叫 copy_xxx 系列的函式對 task_struct 中的各種核心物件進行複製處理，還申請了 pid 。接下來我們分小節來檢視該函式的每一個細節。
 
-4.1 複製 task_struct 結構體
+#### 4.1 複製 task_struct 結構體
 
 注意一下，上面呼叫 dup_task_struct 時傳入的引數是 current，它表示的是當前任務。在 dup_task_struct 裡，會申請一個新的 task_struct 核心物件，然後將當前任務複製給它。需要注意的是，這次複製只會複製 task_struct 結構體本身，它內部包含的 mm_struct 等成員不會被複制。
 
 我們來簡單看下具體的程式碼。
 
-其中 alloc_task_struct_node 用於在 slab 核心記憶體管理區中申請一塊記憶體出來。關於 slab 機制請參考- 核心記憶體管理
+```
+//file:kernel/fork.c
+static struct task_struct *dup_task_struct(struct task_struct *orig)
+{
+    //申請 task_struct 核心物件
+    tsk = alloc_task_struct_node(node);
+    //複製 task_struct
+    err = arch_dup_task_struct(tsk, orig);
+    ...
+}
+```
+
+其中 alloc_task_struct_node 用於在 slab 核心記憶體管理區中申請一塊記憶體出來。關於 slab 機制請參考-[核心記憶體管理](https://mp.weixin.qq.com/s/OR2XB4J76haGc1THeq7WQg)
+
+```
+//file:kernel/fork.c
+static struct kmem_cache *task_struct_cachep;
+static inline struct task_struct *alloc_task_struct_node(int node)
+{
+    return kmem_cache_alloc_node(task_struct_cachep, GFP_KERNEL, node);
+}
+```
 
 申請完記憶體後，呼叫 arch_dup_task_struct 進行記憶體複製。
 
-4.2 複製開啟檔案列表
+```
+//file:kernel/fork.c
+int arch_dup_task_struct(struct task_struct *dst,
+                           struct task_struct *src)
+{
+    *dst = *src;
+    return 0;
+}
+```
+
+#### 4.2 複製開啟檔案列表
 
 我們先回憶一下前面的內容，建立執行緒呼叫 clone 系統呼叫的時候，傳入了一堆的 flag，其中有一個就是 CLONE_FILES。如果傳入了 CLONE_FILES 標記，就會複用當前程序的開啟檔案列表 - files 成員。
 
@@ -121,11 +325,28 @@ CLONE_FILES：新 task 和父程序共享檔案描述符表
 
 好了，我們繼續看 copy_files 具體實現。
 
+```
+//file:kernel/fork.c
+static int copy_files(unsigned long clone_flags, struct task_struct *tsk)
+{
+    struct files_struct *oldf, *newf;
+    oldf = current->files;
+
+    if (clone_flags & CLONE_FILES) {
+        atomic_inc(&oldf->count);
+        goto out;
+    }
+    newf = dup_fd(oldf, &error);
+    tsk->files = newf;
+    ...
+}
+```
+
 從程式碼看出，如果指定了 CLONE_FILES（建立執行緒的時候），只是在原有的 files_struct 裡面 +1 就算是完事了，指標不變，仍然是複用建立它的程序的 files_struct 物件。
 
 這就是程序和執行緒的其中一個區別，對於程序來講，每一個程序都需要獨立的 files_struct。但是對於執行緒來講，它是和建立它的執行緒複用 files_struct 的。
 
-4.3 複製檔案目錄資訊
+#### 4.3 複製檔案目錄資訊
 
 再回憶一下建立執行緒的時候，傳入的 flag 裡也包括 CLONE_FS。如果指定了這個標誌，就會複用當前程序的檔案目錄 - fs 成員。
 
@@ -133,13 +354,45 @@ CLONE_FILES：新 task 和父程序共享檔案描述符表
 
 好，我們繼續看 copy_fs 的實現。
 
+```
+//file:kernel/fork.c
+static int copy_fs(unsigned long clone_flags, struct task_struct *tsk)
+{
+    struct fs_struct *fs = current->fs;
+    if (clone_flags & CLONE_FS) {
+        fs->users++;
+        return 0;
+    }
+    tsk->fs = copy_fs_struct(fs);
+    return 0;
+}
+```
+
 和 copy_files 函式類似，在 copy_fs 中如果指定了 CLONE_FS（建立執行緒的時候），並沒有真正申請獨立的 fs_struct 出來，近幾年只是在原有的 fs 裡的 users +1 就算是完事。
 
 而在建立程序的時候，由於沒有傳遞這個標誌，會進入到 copy_fs_struct 函式中申請新的 fs_struct 並進行賦值複製。
 
-4.4 複製記憶體地址空間
+#### 4.4 複製記憶體地址空間
 
 建立執行緒的時候帶了 CLONE_VM 標誌，而建立程序的時候沒帶。接下來在 copy_mm 函式 中會根據是否有這個標誌來決定是該和當前執行緒共享一份地址空間 mm_struct，還是建立一份新的。
+
+```
+//file:kernel/fork.c
+static int copy_mm(unsigned long clone_flags, struct task_struct *tsk)
+{
+    struct mm_struct *mm, *oldmm;
+    oldmm = current->mm;
+
+    if (clone_flags & CLONE_VM) {
+        atomic_inc(&oldmm->mm_users);
+        mm = oldmm;
+        goto good_mm;
+    }
+    mm = dup_mm(tsk);
+good_mm:
+    return 0;
+}
+```
 
 對於執行緒來講，由於傳入了 CLONE_VM 標記，所以不會申請新的 mm_struct 出來，而是共享其父程序的。
 
@@ -147,13 +400,13 @@ CLONE_FILES：新 task 和父程序共享檔案描述符表
 
 而對於多程序程式來說，每一個程序都有獨立的 mm_struct(地址空間)。
 
-因為在核心中執行緒和程序都是用 task_struct 來表示，只不過執行緒和程序的區別是會和建立它的父程序共享開啟檔案列表、目錄資訊、虛擬地址空間等資料結構，會更輕量一些。所以在 Linux 下的執行緒也叫 輕量級程序 。
+因為在核心中執行緒和程序都是用 task_struct 來表示，只不過執行緒和程序的區別是會和建立它的父程序共享開啟檔案列表、目錄資訊、虛擬地址空間等資料結構，會更輕量一些。所以在 Linux 下的執行緒也叫輕量級程序。
 
 在開啟檔案列表、目錄資訊、記憶體虛擬地址空間中，記憶體虛擬地址空間是最重要的。因此區分一個 Task 任務該叫執行緒還是該叫程序，一般習慣上就看它是否有獨立的地址空間。如果有，就叫做程序，沒有，就叫做執行緒。
 
 這裡展開多說一句，對於核心任務來說，無論有多少個任務，其使用地址空間都是同一個。所以一般都叫核心執行緒，而不是核心程序。
 
-五 結論
+### 五 結論
 
 建立執行緒的整個過程我們就介紹完了。回頭總結一下，對於執行緒來講，其地址空間 mm_struct、目錄資訊 fs_struct、開啟檔案列表 files_struct 都是和建立它的任務共享的。
 
@@ -161,11 +414,12 @@ CLONE_FILES：新 task 和父程序共享檔案描述符表
 
 總之，在 Linux 核心中並沒有對執行緒做特殊處理，還是由 task_struct 來管理。從核心的角度看，執行緒本質上還是一個程序。只不過和普通程序比，稍微“輕量”了那麼一些。
 
-那麼執行緒具體能輕量多少呢？我之前曾經做過一個程序和執行緒的上下文切換開銷測試。程序的測試結果是一次上下文切換平均 2.7 - 5.48 us 之間。執行緒上下文切換是 3.8 us左右。總的來說，程序執行緒切換還是沒差太多。參見 《程序/執行緒切換究竟需要多少開銷？》
+那麼執行緒具體能輕量多少呢？我之前曾經做過一個程序和執行緒的上下文切換開銷測試。程序的測試結果是一次上下文切換平均 2.7 - 5.48 us 之間。執行緒上下文切換是 3.8 us左右。總的來說，程序執行緒切換還是沒差太多。參見[《程序/執行緒切換究竟需要多少開銷？》](https://mp.weixin.qq.com/s/uq5s5vwk5vtPOZ30sfNsOg)
 
 更多幹貨內容，詳見：
 
-Github： https://github.com/yanfeizhang/coder-kung-fu 關注公眾號：微信掃描下方二維碼
+Github：[https://github.com/yanfeizhang/coder-kung-fu](https://github.com/yanfeizhang/coder-kung-fu)
+關注公眾號：微信掃描下方二維碼
 
 我打造了一套更為完整的影片課程。總共包括了硬體原理、記憶體管理、程序管理、網路管理、檔案系統、容器原理、效能觀測、效能最佳化、呼叫原理、等幾個大部分的內容。
 

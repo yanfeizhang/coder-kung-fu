@@ -15,9 +15,9 @@ title: "聊聊C語言中的malloc申請記憶體的內部原理"
 
 在前面的文章中，我們介紹了 mmap、brk 等系統呼叫。但是這些系統呼叫在很多的時候，我們並不會直接使用。原因有以下兩個
 
-系統呼叫管理的記憶體粒度太大。系統呼叫申請記憶體都是整頁 4KB 起，但是我們平時程式設計的時候經常需要申請幾十位元組的小物件。如果使用 mmap 未免碎片率也太大了。
+- 系統呼叫管理的記憶體粒度太大。系統呼叫申請記憶體都是整頁 4KB 起，但是我們平時程式設計的時候經常需要申請幾十位元組的小物件。如果使用 mmap 未免碎片率也太大了。
 
-頻繁的系統呼叫的開銷比較大。和函式呼叫比起來，系統的呼叫的開銷非常的大。如果每次申請記憶體都發起系統呼叫，那麼我們的應用程式將慢如牛。
+- 頻繁的系統呼叫的開銷比較大。和函式呼叫比起來，系統的呼叫的開銷非常的大。如果每次申請記憶體都發起系統呼叫，那麼我們的應用程式將慢如牛。
 
 所以，現代程式語言的做法都是自己在應用層實現了一個記憶體分配器。其思想都和核心自己用的 SLAB 記憶體分配器類似。都是記憶體分配器預先向作業系統申請一些記憶體，然後自己構造一個記憶體池。當我們申請記憶體的時候，直接由分配器從預先申請好的記憶體池裡申請。當我們釋放記憶體的時候，分配器會將這些記憶體管理起來，並透過一些策略來判斷是否將其回收給作業系統。
 
@@ -25,43 +25,111 @@ title: "聊聊C語言中的malloc申請記憶體的內部原理"
 
 我們今天就以最經（古）典（老）的 ptmalloc 記憶體分配器講起，帶大家深入地瞭解 malloc 函式的內部工作原理。
 
-一、ptmalloc 記憶體分配器定義
+> 本文中需要用到 glibc 原始碼，下載地址是[http://ftp.gnu.org/gnu/glibc/](http://ftp.gnu.org/gnu/glibc/)。本文使用的原始碼版本是 2.12.1。
 
-1.1 分配區 arena
+### 一、ptmalloc 記憶體分配器定義
+
+#### 1.1 分配區 arena
 
 在 ptmalloc 中，使用分配區 arena 管理從作業系統中批次申請來的記憶體。 之所以要有多個分配區，原因是多執行緒在操作一個分配區的時候需要加鎖。線上程比較多的時候，在鎖上浪費的開銷會比較多。為了降低鎖開銷，ptmalloc 支援多個分配區。這樣在單個分配區上鎖的競爭開銷就會小很多。
 
 在 ptmalloc 中存在一個全域性的主分配區，是用靜態變數的方式定義的。
 
+```
+//file:malloc/malloc.c
+static struct malloc_state main_arena;
+```
+
 分配區的資料型別是 struct malloc_state，其定義如下：
+
+```
+//file:malloc/malloc.c
+struct malloc_state {
+    // 鎖，用來解決在多執行緒分配時的競爭問題
+    mutex_t mutex;
+
+    // 分配區下管理記憶體的各種資料結構
+    ...
+
+    /* Linked list */
+    struct malloc_state *next;
+}
+```
 
 在分配區中，首先有一個鎖。這是因為多個分配區只是能降低鎖競爭的發生，但不能完全杜絕。所以還需要一個鎖來應對多執行緒申請記憶體時的競爭問題。接下來就是分配區中記憶體管理的各種資料結構。這部分下個小節我們再詳細看。
 
 再看下 next 指標。透過這個指標，ptmalloc 把所有的分配區都以一個連結串列組織了起來，方便後面的遍歷。
 
-1.2 記憶體塊 chunk
+#### 1.2 記憶體塊 chunk
 
 在每個 arena 中，最基本的記憶體分配的單位是 malloc_chunk，我們簡稱 chunk。它包含 header 和 body 兩部分。這是 chunk 在 glibc 中的定義：
+
+```
+// file:malloc/malloc.c
+struct malloc_chunk {
+    INTERNAL_SIZE_T      prev_size;  /* Size of previous chunk (if free).  */
+    INTERNAL_SIZE_T      size;       /* Size in bytes, including overhead. */
+
+    struct malloc_chunk* fd;         /* double links -- used only if free. */
+    struct malloc_chunk* bk;
+
+    /* Only used for large blocks: pointer to next larger size.  */
+    struct malloc_chunk* fd_nextsize; /* double links -- used only if free. */
+    struct malloc_chunk* bk_nextsize;
+};
+```
 
 我們在開發中每次呼叫 malloc 申請記憶體的時候，分配器都會給我們分配一個大小合適的 chunk 出來，把 body 部分的 user data 的地址返回給我們。這樣我們就可以向該地址寫入和讀取資料了。
 
 如果我們在開發中呼叫 free 釋放記憶體的話，其對應的 chunk 物件其實並不會歸還給核心。而是由 glibc 又組織管理了起來。其 body 部分的 fd、bk 欄位分別是指向上一個和下一個空閒的 chunk（ chunk 在使用的時候是沒有這兩個欄位的，這塊記憶體在不同場景下的用途不同），用來當雙向連結串列指標來使用。
 
-1.3 空閒記憶體塊連結串列 bins
+#### 1.3 空閒記憶體塊連結串列 bins
 
-glibc 會將相似大小的空閒記憶體塊 chunk 都串起來。這樣等下次使用者再來分配的時候，先找到連結串列，然後就可以從連結串列中取下一個元素快速分配。這樣的一個連結串列被稱為一個 bin。 ptmalloc 中根據管理的記憶體塊的大小，總共有 fastbins、smallbins、largebins 和 unsortedbins 四類。
+glibc 會將相似大小的空閒記憶體塊 chunk 都串起來。這樣等下次使用者再來分配的時候，先找到連結串列，然後就可以從連結串列中取下一個元素快速分配。這樣的一個連結串列被稱為一個 bin。ptmalloc中根據管理的記憶體塊的大小，總共有 fastbins、smallbins、largebins 和 unsortedbins 四類。
 
 這四類 bins 分別定義在 struct malloc_state 的不同成員裡。
 
+```
+//file:malloc/malloc.c
+struct malloc_state {
+
+    /* Fastbins */
+    mfastbinptr      fastbins[NFASTBINS];
+
+    /* Base of the topmost chunk -- not otherwise kept in a bin */
+    mchunkptr        top;
+
+    /* The remainder from the most recent split of a small request */
+    mchunkptr        last_remainder;
+
+    /* Normal bins packed as described above */
+    mchunkptr        bins[NBINS * 2];
+
+    /* Bitmap of bins */
+    unsigned int     binmap[BINMAPSIZE];
+}
+```
+
 fastbins 是用來管理尺寸最小空閒記憶體塊的連結串列。其管理的記憶體塊的最大大小是 MAX_FAST_SIZE。
+
+```
+#define MAX_FAST_SIZE     (80 * SIZE_SZ / 4)
+```
 
 SIZE_SZ 這個宏指的是指標的大小，在 32 位系統下，SIZE_SZ 等於 4 。在 64 位系統下，它等於 8。因為現在都是 64 位系統，所以本文中後面的例子中我們都是以 SIZE_SZ 為 8 來舉例。所以在 64 位系統下，MAX_FAST_SIZE = 80 * 8 / 4 = 160 位元組。
 
 bins 是用來管理空閒記憶體塊的主要連結串列陣列。其連結串列總數為 2\ * NBINS 個，NBINS 的大小是 128，所以這裡總共有 256 個空閒連結串列。
 
+```
+//file:malloc/malloc.c
+#define NBINS             128
+```
+
 smallbins、largebins 和 unsortedbins 都使用的是這個陣列。
 
 另外top 成員是用來儲存著特殊的 top chunk。當所有的空閒連結串列中都申請不到合適的大小的時候，會來這裡申請。
+
+##### 1）fastbins
 
 其中 fastbins 成員定義的是尺寸最小的元素的連結串列。它存在的原因是，使用者的應用程式中絕大多數的記憶體分配是小記憶體，這組 bin 是用於提高小記憶體的分配效率的。
 
@@ -69,21 +137,54 @@ fastbin 中有多個連結串列，每個 bin 連結串列管理的都是固定�
 
 glibc 中提供了 fastbin_index 函式可以快速地根據要申請的記憶體大小找到 fastbins 下對應的陣列下標。
 
+```
+//file:malloc/malloc.c
+#define fastbin_index(sz) \
+  ((((unsigned int)(sz)) >> (SIZE_SZ == 8 ? 4 : 3)) - 2)
+```
+
 例如要申請的記憶體塊大小是 32 位元組，fastbin_index(32) 計算後可知應該到下標位 0 的空閒記憶體連結串列裡去找。再比如要申請的記憶體塊大小是 64 位元組，fastbin_index(64) 計算後得知陣列下標為 2。
+
+##### 2）smallbins
 
 smallbins 是在 malloc_state 下的 bins 成員中管理的。
 
 smallbins 陣列總共有 64 個連結串列指標，是由 NSMALLBINS 來定義的。
 
+```
+//file:malloc/malloc.c
+#define NSMALLBINS         64
+```
+
 和 fastbin 一樣，同一個 small bin 中的 chunk 具有相同的大小。small bin 在 64 位系統上，兩個相鄰的 small bin 中的 chunk 大小相差 16 位元組(MALLOC_ALIGNMENT 是 2 個 SIZE_SZ，一個 SIZE_SZ 大小是 8)。
 
+```
+//file:malloc/malloc.c
+#define MALLOC_ALIGNMENT       (2 * SIZE_SZ)
+#define SMALLBIN_WIDTH    MALLOC_ALIGNMENT
+```
+
 管理的 chunk 大小範圍定義在 in_smallbin_range 中能看到。只要小於 MIN_LARGE_SIZE 的都屬於 small bin 的管理範圍。
+
+```
+#define MIN_LARGE_SIZE    (NSMALLBINS * SMALLBIN_WIDTH)
+#define in_smallbin_range(sz)  \
+  ((unsigned long)(sz) < (unsigned long)MIN_LARGE_SIZE)
+```
 
 透過上面的原始碼可以看出 MIN_LARGE_SIZE 的大小等於 64 * 16 = 1024。所以 small bin 管理的記憶體塊大小是從 32 位元組、48 位元組、......、1008 位元組。（在 glibc 64位系統中沒有管理 16 位元組的空閒記憶體，是 32 位元組起的）
 
 另外 glibc 也提供了根據申請的位元組大小快速算出其在 small bin 中的下標的函式 smallbin_index。
 
+```
+//file:malloc/malloc.c
+#define smallbin_index(sz) \
+  (SMALLBIN_WIDTH == 16 ? (((unsigned)(sz)) >> 4) : (((unsigned)(sz)) >> 3))
+```
+
 例如要申請的記憶體塊大小是 32 smallbin_index(32) 計算後可知應該到下標位 2 的空閒記憶體連結串列裡去找。再比如要申請的記憶體塊大小是 64 smallbin_index(64) 計算後得知陣列下標為 3。
+
+##### 2）largebins
 
 largebins 和 smallbins 的區別是它管理的記憶體塊比較大。其管理的記憶體是 1024 起的。
 
@@ -91,25 +192,40 @@ largebins 和 smallbins 的區別是它管理的記憶體塊比較大。其管�
 
 largebin_index_64 函式用來根據要申請的記憶體大小計算出其在 large bins 中的下標。
 
+```
+//file:malloc/malloc.c
+#define largebin_index_64(sz)                                                \
+(((((unsigned long)(sz)) >>  6) <= 48)?  48 + (((unsigned long)(sz)) >>  6): \
+ ((((unsigned long)(sz)) >>  9) <= 20)?  91 + (((unsigned long)(sz)) >>  9): \
+ ((((unsigned long)(sz)) >> 12) <= 10)? 110 + (((unsigned long)(sz)) >> 12): \
+ ((((unsigned long)(sz)) >> 15) <=  4)? 119 + (((unsigned long)(sz)) >> 15): \
+ ((((unsigned long)(sz)) >> 18) <=  2)? 124 + (((unsigned long)(sz)) >> 18): \
+                    126)
+```
+
+##### 4）unsortedbins
+
 unsortedbins 比較特殊，它管理的記憶體塊不再是和 smallbins 或 largebins 中那樣是相同或者相近大小的。而是不固定，是被當做快取區來用的。
 
 當使用者釋放一個堆塊之後，會先進入 unsortedbin。再次分配堆塊時，ptmalloc 會優先檢查這個連結串列中是否存在合適的堆塊，如果找到了，就直接返回給使用者(這個過程可能會對 unsortedbin 中的堆塊進行切割)。若沒有找到合適的，系統也會順帶清空這個連結串列上的元素，把它放到合適的 smallbin 或者 large bin 中。
+
+##### 5）top chunk
 
 另外還有有個獨立於 fastbins、smallbins、largebins 和 unsortedbins 之外的一個特殊的 chunk 叫 top chunk。
 
 如果沒有空閒的 chunk 可用的時候，或者需要分配的 chunk 足夠大，當各種 bins 都不滿足需求，會從top chunk 中嘗試分配。
 
-二、malloc 的工作過程
+### 二、malloc 的工作過程
 
 在前面的小節裡我們看到，glibc 在分配區 arena 中分別用 fastbins、bins（儲存著 smallbins、largebins 和 unsortedbins）以及 top chunk 來管理著當前已經申請到的所有空閒記憶體塊。
 
 有了這些組織手段後，當使用者要分配記憶體的時候，malloc 函式就可以根據其大小，從合適的 bins 中查詢合適的 chunk。
 
-假如使用者要申請 30 位元組的記憶體，那就直接找到 32 位元組這個 bin 連結串列，從連結串列頭部摘下來一個 chunk 直接用。
+- 假如使用者要申請 30 位元組的記憶體，那就直接找到 32 位元組這個 bin 連結串列，從連結串列頭部摘下來一個 chunk 直接用。
 
-假如使用者要申請 500 位元組的記憶體，那就找到 512 位元組的 bin 連結串列，摘下來一個 chunk 使用
+- 假如使用者要申請 500 位元組的記憶體，那就找到 512 位元組的 bin 連結串列，摘下來一個 chunk 使用
 
-......
+- ......
 
 當使用者用完需要釋放的時候，glibc 再根據其記憶體塊大小，放到合適的 bin 下管理起來。下次再給使用者申請時備用。
 
@@ -119,27 +235,114 @@ unsortedbins 比較特殊，它管理的記憶體塊不再是和 smallbins 或 l
 
 malloc 在 glibc 中的實現函式名是 public_mALLOc。
 
+```
+//file:malloc/malloc.c
+Void_t*
+public_mALLOc(size_t bytes)
+{
+    // 選一個分配區 arena 出來，併為其加鎖
+    arena_lookup(ar_ptr);
+    arena_lock(ar_ptr, bytes);
+
+    // 從分配區申請記憶體
+    victim = _int_malloc(ar_ptr, bytes);
+
+    // 如果選中的分配區沒有申請成功，則換一個分配區申請
+    ......
+
+    // 釋放鎖並返回
+    mutex_unlock(&ar_ptr->mutex);
+    return victim;
+}
+```
+
 在 public_mALLOc 中主要的邏輯就是選擇分配區和鎖操作，這是為了避免多執行緒衝突。真正的記憶體申請核心邏輯都在 \_int_malloc 函式中。這個函式非常的長。為了清晰可見，我們把它的骨幹邏輯列出來。
+
+```
+//file:malloc/malloc.c
+static Void_t*
+_int_malloc(mstate av, size_t bytes)
+{
+    // 對使用者請求的位元組數進行規範化
+    INTERNAL_SIZE_T nb; /* normalized request size */
+    checked_request2size(bytes, nb);
+
+    // 1.從 fastbins 中申請記憶體
+    if ((unsigned long)(nb) <= (unsigned long)(get_max_fast ())) {
+        ...
+    }
+
+    // 2.從 smallbins 中申請記憶體
+    if (in_smallbin_range(nb)) {
+        ...
+    }
+
+    for(;;) {
+        // 3.遍歷搜尋 unsorted bins
+        while ( (victim = unsorted_chunks(av)->bk) != unsorted_chunks(av)) {
+            // 判斷是否對 chunk 進行切割
+            ...
+
+            // 判斷是否精準匹配，若匹配可以直接返回
+            ...
+
+            // 若不精準匹配，則將 chunk 放到對應的 bins 中
+            // 如果屬於 smallbins，則插入到 smallbins 中
+            // 如果屬於 largebins，則插入到 largebins 中
+            ...
+
+            // 避免遍歷 unsorted bin 佔用過多時間
+            if (++iters >= MAX_ITERS)
+                break;
+        }
+
+        // 4.如果屬於 large 範圍或者之前的 fastbins/smallbins/unsorted bins 請求都失敗
+        //   則從 large bin 中尋找 chunk，可能會涉及到切割
+        ...
+
+
+        // 5.嘗試從 top chunk 中申請
+        //   可能會涉及對 fastbins 中 chunk 的合併
+    use_top:
+        victim = av->top;
+        size = chunksize(victim);
+        ...
+
+        // 最後，分配區中沒申請到，則向作業系統申請
+        void *p = sYSMALLOc(nb, av);
+    }
+}
+```
 
 在一進入函式的時候，首先是呼叫 checked_request2size 對使用者請求的位元組數進行規範化。因為分配區中管理的都是 32、64 等對齊的位元組數的記憶體。如果使用者請求 30 位元組，那麼 ptmalloc 會對齊一下，然後按 32 位元組為其申請。
 
 接著是從分配區的各種 bins 中嘗試為使用者分配記憶體。總共包括以下幾次的嘗試。
 
-1 如果申請位元組數小於 fast bins 管理的記憶體塊最大位元組數，則嘗試從 fastbins 中申請記憶體，申請成功就返回
+- 1 如果申請位元組數小於 fast bins 管理的記憶體塊最大位元組數，則嘗試從 fastbins 中申請記憶體，申請成功就返回
 
-2 如果申請位元組數小於 small bins 管理的記憶體，則嘗試從 smallbins 中申請記憶體，申請成功就返回
+- 2 如果申請位元組數小於 small bins 管理的記憶體，則嘗試從 smallbins 中申請記憶體，申請成功就返回
 
-3 嘗試從 unsorted bins 中申請記憶體，申請成功就返回
+- 3 嘗試從 unsorted bins 中申請記憶體，申請成功就返回
 
-4 嘗試從 large bins 中申請記憶體，申請成功就返回
+- 4 嘗試從 large bins 中申請記憶體，申請成功就返回
 
-5 如果前面的步驟申請都沒成功，嘗試從 top chunk 中申請記憶體並返回
+- 5 如果前面的步驟申請都沒成功，嘗試從 top chunk 中申請記憶體並返回
 
-6 從作業系統中使用 mmap 等系統呼叫申請記憶體
+- 6 從作業系統中使用 mmap 等系統呼叫申請記憶體
 
 在這些分配嘗試中，一旦某一步申請成功了，就會返回。後面的步驟就不需要進行了。
 
 最後在 top chunk 中也沒有足夠的記憶體的時候，就會呼叫 sYSMALLOc 來向作業系統發起記憶體申請。
+
+```
+//file:malloc/malloc.c
+static Void_t* sYSMALLOc(INTERNAL_SIZE_T nb, mstate av)
+{
+    ...
+    mm = (char*)(MMAP(0, size, PROT_READ|PROT_WRITE, MAP_PRIVATE));
+    ...
+}
+```
 
 在 sYSMALLOc 中，是透過 mmap 等系統呼叫來申請記憶體的。
 
@@ -147,6 +350,7 @@ malloc 在 glibc 中的實現函式名是 public_mALLOc。
 
 以上就是 glibc 中的 ptmalloc 管理堆記憶體的基本原理。
 
-寫在最後，由於我的這些知識在公眾號裡文章比較分散，很多人似乎沒有理解到我對知識組織的體系結構。而且圖文也不像影片那樣理解起來更直接。所以我在知識星球上規劃了影片系列課程，包括 硬體原理、記憶體管理、程序管理、檔案系統、網路管理、Golang語言、容器原理、效能觀測、效能最佳化九大部分大約 120 節內容 ，每週更新。加入方式參見 我要開始搞知識星球啦 、 如何才能高效地學習技術,我投“融匯貫通”一票
+寫在最後，由於我的這些知識在公眾號裡文章比較分散，很多人似乎沒有理解到我對知識組織的體系結構。而且圖文也不像影片那樣理解起來更直接。所以我在知識星球上規劃了影片系列課程，包括硬體原理、記憶體管理、程序管理、檔案系統、網路管理、Golang語言、容器原理、效能觀測、效能最佳化九大部分大約 120 節內容，每週更新。加入方式參見[我要開始搞知識星球啦](https://mp.weixin.qq.com/s/_8ux274sY-As__Xwoqmewg)、[如何才能高效地學習技術,我投“融匯貫通”一票](https://mp.weixin.qq.com/s/z82z9jqnt08gBLYGxLHY2g)
 
-Github： https://github.com/yanfeizhang/coder-kung-fu 關注公眾號：微信掃描下方二維碼
+Github：[https://github.com/yanfeizhang/coder-kung-fu](https://github.com/yanfeizhang/coder-kung-fu)
+關注公眾號：微信掃描下方二維碼

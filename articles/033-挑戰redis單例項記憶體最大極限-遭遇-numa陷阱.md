@@ -17,7 +17,7 @@ title: "挑戰Redis單例項記憶體最大極限，“遭遇”NUMA陷阱！"
 
 看起來這個解釋非常有說服力。於是乎，我就想親手捕捉一次NUMA陷阱，看看這個傢伙究竟什麼樣。
 
-先聊聊QPI與NUMA
+## 先聊聊QPI與NUMA
 
 最早在CPU都是單核的時候，用的匯流排都是FSB匯流排。經典結構如下圖：
 
@@ -27,62 +27,158 @@ title: "挑戰Redis單例項記憶體最大極限，“遭遇”NUMA陷阱！"
 
 CPU的設計者們很快改變了自己的設計，引入了QPI匯流排，相應的CPU的結構就叫NMUA架構。下圖直觀理解
 
-話說NUMA陷阱
+## 話說NUMA陷阱
 
 NUMA陷阱指的是引入QPI匯流排後，在計算機系統裡可能會存在的一個坑。大致的意思就是如果你的機器開啟了numa，那麼你的記憶體即使在充足的情況下，也會使用磁碟上的swap，導致效能低下。原因就是NUMA為了高效，會僅僅只從你的當前node裡分配記憶體，只要當前node裡用光了（即使其它node還有），也仍然會啟用硬碟swap。
 
 當我第一次聽說到這個概念的時候，不禁感嘆我運氣好，我的Redis例項貌似從來沒有掉進這個陷阱裡過。那為了以後也別栽坑，趕緊去了解了下我的機器的numa狀態：
 
-上面結果說明我們有兩個node，node0和node1，分別有12個核心，各有32GB的記憶體。 再看zone_reclaim_mode，它用來管理當一個記憶體區域(zone)內部的記憶體耗盡時，是從其內部進行記憶體回收還是可以從其他zone進行回收的選項：
+```
+# numactl --hardware
+available: 2 nodes (0-1)
+node 0 cpus: 0 1 2 3 4 5 12 13 14 15 16 17
+node 0 size: 32756 MB
+node 0 free: 19642 MB
+node 1 cpus: 6 7 8 9 10 11 18 19 20 21 22 23
+node 1 size: 32768 MB
+node 1 free: 18652 MB
+node distances:
+node   0   1
+  0:  10  21
+  1:  21  10
+```
 
-0 關閉zone_reclaim模式，可以從其他zone或NUMA節點回收記憶體
+上面結果說明我們有兩個node，node0和node1，分別有12個核心，各有32GB的記憶體。
+再看zone_reclaim_mode，它用來管理當一個記憶體區域(zone)內部的記憶體耗盡時，是從其內部進行記憶體回收還是可以從其他zone進行回收的選項：
 
-1 開啟zone_reclaim模式，這樣記憶體回收只會發生在本地節點內
+- 0 關閉zone_reclaim模式，可以從其他zone或NUMA節點回收記憶體
 
-2 在本地回收記憶體時，可以將cache中的髒資料寫回硬碟，以回收記憶體
+- 1 開啟zone_reclaim模式，這樣記憶體回收只會發生在本地節點內
 
-4 在本地回收記憶體時，表示可以用Swap 方式回收記憶體
+- 2 在本地回收記憶體時，可以將cache中的髒資料寫回硬碟，以回收記憶體
+
+- 4 在本地回收記憶體時，表示可以用Swap 方式回收記憶體
+
+```
+# cat /proc/sys/vm/zone_reclaim_mode
+1
+```
 
 額，好吧。我的這臺機器上的zone_reclaim_mode還真是1，只會在本地節點回收記憶體。
 
-實踐捕捉numa陷阱未遂
+## 實踐捕捉numa陷阱未遂
 
 那我的好奇心就來了，既然我的單個node節點只有32G，那我部署一個50G的Redis，給它填滿資料試試到底會不會發生swap。
 
 實驗開始，我先檢視了本地總記憶體，以及各個node的記憶體剩餘狀況。
 
-總記憶體不用解釋， /proc/zoneinfo 裡包含了node可供應用程式申請的free pages。node1有4651908個頁面，4651908*4K=18G的可用記憶體。
+```
+# top
+......
+Mem:  65961428k total, 26748124k used, 39213304k free,   632832k buffers
+Swap:  8388600k total,        0k used,  8388600k free,  1408376k cached
+
+# cat /proc/zoneinfo"
+  ......
+Node 0, zone   Normal
+  pages free     4651908
+Node 1, zone   Normal
+  pages free     4773314
+```
+
+總記憶體不用解釋，`/proc/zoneinfo`裡包含了node可供應用程式申請的free pages。node1有4651908個頁面，4651908*4K=18G的可用記憶體。
 
 接下來讓我們啟動redis例項，把其記憶體上限設定到超過單個node裡的記憶體大小。我這裡單node記憶體大小是32G，我把redis設定成了50G。開始灌入資料。最終資料全部灌完之後，
 
+```
+# top
+Mem:  65961428k total, 53140400k used, 12821028k free,   637112k buffers
+Swap:  8388600k total,        0k used,  8388600k free,  1072524k cached
+  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+ 8356 root      20   0 62.8g  46g 1292 S  0.0 74.5   3:45.34 redis-server
+
+# cat /proc/zoneinfo | grep "pages free"
+  pages free     3935
+  pages free     347180
+  pages free     1402744
+  pages free     1501670
+```
+
 實驗證明，在zone_reclaim_mode為1的情況下，Redis是平均在兩個node裡申請節點的，並沒有固定在某一個cpu裡。
 
-莫非是大佬們的忠告錯了嗎？其實不是，如果不繫結親和性的話， 分配記憶體是當程序在哪個node上的CPU發起記憶體申請，就優先在哪個node裡分配記憶體 。之所以是平均分配在兩個node裡，是因為redis-server程序實驗中經常會進入主動睡眠狀態，醒來後可能CPU就換了。所以基本上，最後看起來記憶體是平均分配的。如下圖，CPU進行了500萬次的上下文切換，用top命令看到cpu也是在node0和node1跳來跳去。
+莫非是大佬們的忠告錯了嗎？其實不是，如果不繫結親和性的話，分配記憶體是當程序在哪個node上的CPU發起記憶體申請，就優先在哪個node裡分配記憶體。之所以是平均分配在兩個node裡，是因為redis-server程序實驗中經常會進入主動睡眠狀態，醒來後可能CPU就換了。所以基本上，最後看起來記憶體是平均分配的。如下圖，CPU進行了500萬次的上下文切換，用top命令看到cpu也是在node0和node1跳來跳去。
 
-改進方法，成功抓獲numa陷阱
+```
+# grep ctxt /proc/8356/status
+voluntary_ctxt_switches:        5259503
+nonvoluntary_ctxt_switches:     1449
+```
+
+## 改進方法，成功抓獲numa陷阱
 
 殺死程序，記憶體歸位
 
+```
+# cat /proc/zoneinfo
+Node 0, zone   Normal
+  pages free     7597369
+Node 1, zone   Normal
+  pages free     7686732
+```
+
 繫結CPU和記憶體的親和性，然後再啟動。
+
+```
+numactl --cpunodebind=0 --membind=0 /search/odin/daemon/redis/bin/redis-server /search/odin/daemon/redis/conf/redis.conf
+```
 
 top命令觀察到CPU確實一直在node0的節點裡。node裡的記憶體也在快速消耗。
 
+```
+# cat /proc/zoneinfo
+Node 0, zone   Normal
+  pages free     10697
+Node 1, zone   Normal
+  pages free     7686732
+```
+
 看，記憶體很快就消耗光了。我們再看top命令觀察到的swap，很激動地發現，我終於陷入到傳說中的numa陷阱了。
+
+```
+Tasks: 603 total,   2 running, 601 sleeping,   0 stopped,   0 zombie
+Cpu(s):  0.7%us,  5.4%sy,  0.0%ni, 85.6%id,  8.2%wa,  0.0%hi,  0.1%si,  0.0%st
+Mem:  65961428k total, 34530000k used, 31431428k free,   319156k buffers
+Swap:  8388600k total,  6000792k used,  2387808k free,   777584k cached
+
+  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+  258 root      20   0     0    0    0 R 72.3  0.0   0:17.18 kswapd0
+25934 root      20   0 37.5g  30g 1224 D 71.6 48.7   1:06.09 redis-server
+```
 
 這時候，Redis實際使用的實體記憶體RES定格到了30g不再上漲，而是開始消耗Swap。
 
 又過了一會兒，Redis被oom給kill了。
 
-結論
+## 結論
 
-透過今天的實驗，我們可以發現確實有NUMA陷阱這種東西存在。不過那是我手工透過 numactl 指令繫結cpu和mem的親和性後才遭遇的。相信國內絕大部分的線上Redis沒有進行這個繫結，所以理論上來單Redis單例項可以使用到整個機器的實體記憶體。（實踐中最好不要這麼幹，你的大部分記憶體都繫結到一個redis程序裡的話，那其它CPU核就沒啥事幹了，浪費了CPU的多核計算能力）
+透過今天的實驗，我們可以發現確實有NUMA陷阱這種東西存在。不過那是我手工透過`numactl`指令繫結cpu和mem的親和性後才遭遇的。相信國內絕大部分的線上Redis沒有進行這個繫結，所以理論上來單Redis單例項可以使用到整個機器的實體記憶體。（實踐中最好不要這麼幹，你的大部分記憶體都繫結到一個redis程序裡的話，那其它CPU核就沒啥事幹了，浪費了CPU的多核計算能力）
 
-擴充套件
+### 擴充套件
 
-當透過 numactl 繫結CPU和mem都在一個node裡的時候，記憶體IO不需要經過匯流排，效能會比較高，你Redis的QPS能力也會上漲。和跨node的記憶體IO效能對比，可以下面的例項，就是10:21的區別。
+當透過`numactl`繫結CPU和mem都在一個node裡的時候，記憶體IO不需要經過匯流排，效能會比較高，你Redis的QPS能力也會上漲。和跨node的記憶體IO效能對比，可以下面的例項，就是10:21的區別。
+
+```
+# numactl --hardware
+......
+node distances:
+node   0   1
+  0:  10  21
+  1:  21  10
+```
 
 你要是對效能有極致的追求，可以試著繫結numa的親和性玩玩。不過，no作no die，掉到numa陷阱裡可別賴我，嘎嘎！
 
-寫在最後，由於我的這些知識在公眾號裡文章比較分散，很多人似乎沒有理解到我對知識組織的體系結構。而且圖文也不像影片那樣理解起來更直接。所以我在知識星球上規劃了影片系列課程，包括 硬體原理、記憶體管理、程序管理、檔案系統、網路管理、Golang語言、容器原理、效能觀測、效能最佳化九大部分大約 120 節內容 ，每週更新。加入方式參見 我要開始搞知識星球啦 、 如何才能高效地學習技術,我投“融匯貫通”一票
+寫在最後，由於我的這些知識在公眾號裡文章比較分散，很多人似乎沒有理解到我對知識組織的體系結構。而且圖文也不像影片那樣理解起來更直接。所以我在知識星球上規劃了影片系列課程，包括硬體原理、記憶體管理、程序管理、檔案系統、網路管理、Golang語言、容器原理、效能觀測、效能最佳化九大部分大約 120 節內容，每週更新。加入方式參見[我要開始搞知識星球啦](https://mp.weixin.qq.com/s/_8ux274sY-As__Xwoqmewg)、[如何才能高效地學習技術,我投“融匯貫通”一票](https://mp.weixin.qq.com/s/z82z9jqnt08gBLYGxLHY2g)
 
-Github： https://github.com/yanfeizhang/coder-kung-fu 關注公眾號：微信掃描下方二維碼
+Github：[https://github.com/yanfeizhang/coder-kung-fu](https://github.com/yanfeizhang/coder-kung-fu)
+關注公眾號：微信掃描下方二維碼

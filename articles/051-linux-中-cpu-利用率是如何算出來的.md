@@ -17,21 +17,23 @@ title: "Linux 中 CPU 利用率是如何算出來的？"
 
 這個輸出結果說簡單也簡單，說複雜也不是那麼容易就能全部搞明白的。例如：
 
-問題 1：top 輸出的利用率資訊是如何計算出來的，它精確嗎？ 問題 2：ni 這一列是 nice，它輸出的是 cpu 在處理啥時的開銷？ 問題 3：wa 代表的是 io wait，那麼這段時間中 cpu 到底是忙碌還是空閒？
+問題 1：top 輸出的利用率資訊是如何計算出來的，它精確嗎？
+問題 2：ni 這一列是 nice，它輸出的是 cpu 在處理啥時的開銷？
+問題 3：wa 代表的是 io wait，那麼這段時間中 cpu 到底是忙碌還是空閒？
 
 今天我們對 cpu 利用率統計進行深入的學習。透過今天的學習，你不但能瞭解 cpu 利用率統計實現細節，還能 nice、io wait 等指標有更深入的理解。
 
 區別於以往的文章，今天我們不直接進入 Linux 實現，而是先從自己的思考開始！
 
-一、先思考一下
+### 一、先思考一下
 
 拋開 Linux 的實現先不談，如果有如下需求，有一個四核伺服器，上面跑了四個程序。
 
 讓你來設計計算整個系統 cpu 利用率的這個需求，支援像 top 命令這樣的輸出，滿足以下要求：
 
-cpu 使用率要儘可能地準確
+- cpu 使用率要儘可能地準確
 
-要能地體現秒級瞬時 cpu 狀態
+- 要能地體現秒級瞬時 cpu 狀態
 
 可以先停下來閱讀思考幾分鐘。
 
@@ -47,9 +49,9 @@ cpu 使用率要儘可能地準確
 
 這個思路思考的方向也是正確的，但是問題有兩個：
 
-你算出的數字都是 25% 的整數倍
+- 你算出的數字都是 25% 的整數倍
 
-這個瞬時值會導致 cpu 使用率顯示的劇烈震盪。
+- 這個瞬時值會導致 cpu 使用率顯示的劇烈震盪。
 
 比如下圖：
 
@@ -71,27 +73,83 @@ cpu 使用率要儘可能地準確
 
 接下來就讓我們進入 Linux 來檢視它對系統 cpu 利用率統計的具體實現。
 
-二、top 命令使用資料在哪兒
+### 二、top 命令使用資料在哪兒
 
 上一節我們說的 Linux 在實現上是將瞬時值都累加到某一個資料上的，這個值是核心透過 /proc/stat 偽檔案來對使用者態暴露。Linux 在計算系統 cpu 利用率的時候用的就是它。
 
 整體上看，top 命令工作的內部細節如下圖所示。
 
-top 命令訪問 /proc/stat 獲取各項 cpu 利用率使用值
+- top 命令訪問 /proc/stat 獲取各項 cpu 利用率使用值
 
-核心呼叫 stat_open 函式來處理對 /proc/stat 的訪問
+- 核心呼叫 stat_open 函式來處理對 /proc/stat 的訪問
 
-核心訪問的資料來源於 kernel_cpustat 陣列，並彙總
+- 核心訪問的資料來源於 kernel_cpustat 陣列，並彙總
 
-列印輸出給使用者態
+- 列印輸出給使用者態
 
 接下來我們把每一步都展開來詳細看看。
 
 透過使用 strace 跟蹤 top 命令的各種系統呼叫，可以看的到它對該檔案的呼叫。
 
+```
+# strace top
+...
+openat(AT_FDCWD, "/proc/stat", O_RDONLY) = 4
+openat(AT_FDCWD, "/proc/2351514/stat", O_RDONLY) = 8
+openat(AT_FDCWD, "/proc/2393539/stat", O_RDONLY) = 8
+...
+```
+
+> 除了 /proc/stat 外，還有各個程序細分的 /proc/{pid}/stat，是用來計算各個程序的 cpu 利用率時使用的。
+
 核心為各個偽檔案都定義了處理函式，/proc/stat 檔案的處理方法是 proc_stat_operations。
 
+```
+//file:fs/proc/stat.c
+static int __init proc_stat_init(void)
+{
+    proc_create("stat", 0, NULL, &proc_stat_operations);
+    return 0;
+}
+
+static const struct file_operations proc_stat_operations = {
+    .open        = stat_open,
+    ...
+};
+```
+
 proc_stat_operations 中包含了該檔案時對應的操作方法。當開啟 /proc/stat 檔案的時候，stat_open 就會被呼叫到。stat_open 依次呼叫 single_open_size，show_stat 來輸出資料內容。我們來看看它的程式碼：
+
+```
+//file:fs/proc/stat.c
+static int show_stat(struct seq_file *p, void *v)
+{
+    u64 user, nice, system, idle, iowait, irq, softirq, steal;
+
+    for_each_possible_cpu(i) {
+        struct kernel_cpustat *kcs = &kcpustat_cpu(i);
+
+        user += kcs->cpustat[CPUTIME_USER];
+        nice += kcs->cpustat[CPUTIME_NICE];
+        system += kcs->cpustat[CPUTIME_SYSTEM];
+        idle += get_idle_time(kcs, i);
+        iowait += get_iowait_time(kcs, i);
+        irq += kcs->cpustat[CPUTIME_IRQ];
+        softirq += kcs->cpustat[CPUTIME_SOFTIRQ];
+        ...
+    }
+
+    //轉換成節拍數並列印出來
+    seq_put_decimal_ull(p, "cpu  ", nsec_to_clock_t(user));
+    seq_put_decimal_ull(p, " ", nsec_to_clock_t(nice));
+    seq_put_decimal_ull(p, " ", nsec_to_clock_t(system));
+    seq_put_decimal_ull(p, " ", nsec_to_clock_t(idle));
+    seq_put_decimal_ull(p, " ", nsec_to_clock_t(iowait));
+    seq_put_decimal_ull(p, " ", nsec_to_clock_t(irq));
+    seq_put_decimal_ull(p, " ", nsec_to_clock_t(softirq));
+    ...
+}
+```
 
 在上面的程式碼中，for_each_possible_cpu 是在遍歷儲存著 cpu 使用率資料的 kcpustat_cpu 變數。該變數是一個 percpu 變數，它為每一個邏輯核都準備了一個陣列元素。裡面儲存著當前核所對應各種事件，包括 user、nice、system、idel、iowait、irq、softirq 等。
 
@@ -101,7 +159,7 @@ proc_stat_operations 中包含了該檔案時對應的操作方法。當開啟 /
 
 我們接著再看看這個變數中的資料是何時加進來的。
 
-三、統計資料怎麼來的
+### 三、統計資料怎麼來的
 
 前面我們提到核心是以取樣的方式來統計 cpu 使用率的。這個取樣週期依賴的是 Linux 時間子系統中的定時器。
 
@@ -109,23 +167,73 @@ Linux 核心每隔固定週期會發出 timer interrupt (IRQ 0)，這有點像�
 
 一個節拍的長度是多長時間，是透過 CONFIG_HZ 來定義的。它定義的方式是每一秒有幾次 timer interrupts。不同的系統中這個節拍的大小可能不同，通常在 1 ms 到 10 ms 之間。可以在自己的 Linux config 檔案中找到它的配置。
 
+```
+# grep ^CONFIG_HZ /boot/config-5.4.56.bsk.10-amd64
+CONFIG_HZ=1000
+```
+
 從上述結果中可以看出，我的機器的每秒要打出 1000 次節拍。也就是每 1 ms 一次。
 
 每次當時間中斷到來的時候，都會呼叫 update_process_times 來更新系統時間。更新後的時間都儲存在我們前面提到的 percpu 變數 kcpustat_cpu 中。
 
 我們來詳細看下彙總過程 update_process_times 的原始碼，它位於 kernel/time/timer.c 檔案中。
 
+```
+//file:kernel/time/timer.c
+void update_process_times(int user_tick)
+{
+    struct task_struct *p = current;
+
+    //進行時間累積處理
+    account_process_tick(p, user_tick);
+    ...
+}
+```
+
 這個函式的引數 user_tick 值得是取樣的瞬間是處於核心態還是使用者態。接下來呼叫 account_process_tick。
 
-在這個函式中，首先設定 cputime = TICK_NSEC , 一個 TICK_NSEC 的定義是一個節拍所佔的納秒數。接下來根據判斷結果分別執行 account_user_time、account_system_time 和 account_idle_time 來統計使用者態、核心態和空閒時間。
+```
+//file:kernel/sched/cputime.c
+void account_process_tick(struct task_struct *p, int user_tick)
+{
+    cputime = TICK_NSEC;
+    ...
 
-3.1 使用者態時間統計
+    if (user_tick)
+        //3.1 統計使用者態時間
+        account_user_time(p, cputime);
+    else if ((p != rq->idle) || (irq_count() != HARDIRQ_OFFSET))
+        //3.2 統計核心態時間
+        account_system_time(p, HARDIRQ_OFFSET, cputime);
+    else
+        //3.3 統計空閒時間
+        account_idle_time(cputime);
+}
+```
+
+在這個函式中，首先設定`cputime = TICK_NSEC`, 一個 TICK_NSEC 的定義是一個節拍所佔的納秒數。接下來根據判斷結果分別執行 account_user_time、account_system_time 和 account_idle_time 來統計使用者態、核心態和空閒時間。
+
+#### 3.1 使用者態時間統計
+
+```
+//file:kernel/sched/cputime.c
+void account_user_time(struct task_struct *p, u64 cputime)
+{
+    //分兩種種情況統計使用者態 CPU 的使用情況
+    int index;
+    index = (task_nice(p) > 0) ? CPUTIME_NICE : CPUTIME_USER;
+
+    //將時間累積到 /proc/stat 中
+    task_group_account_field(p, index, cputime);
+    ......
+}
+```
 
 account_user_time 函式主要分兩種情況統計：
 
-如果程序的 nice 值大於 0，那麼將會增加到 CPU 統計結構的 nice 欄位中。
+- 如果程序的 nice 值大於 0，那麼將會增加到 CPU 統計結構的 nice 欄位中。
 
-如果程序的 nice 值小於等於 0，那麼增加到 CPU 統計結構的 user 欄位中。
+- 如果程序的 nice 值小於等於 0，那麼增加到 CPU 統計結構的 user 欄位中。
 
 看到這裡，開篇的問題 2 就有答案了，其實使用者態的時間不只是 user 欄位，nice 也是。之所以要把 nice 分出來，是為了讓 Linux 使用者更一目瞭然地看到調過 nice 的程序所佔的 cpu 週期有多少。
 
@@ -133,31 +241,79 @@ account_user_time 函式主要分兩種情況統計：
 
 接著呼叫 task_group_account_field 來把時間加到前面我們用到的 kernel_cpustat 核心變數中。
 
-3.2 核心態時間統計
+```
+//file:kernel/sched/cputime.c
+static inline void task_group_account_field(struct task_struct *p, int index,
+                        u64 tmp)
+{
+    __this_cpu_add(kernel_cpustat.cpustat[index], tmp);
+    ...
+}
+```
+
+#### 3.2 核心態時間統計
 
 我們再來看核心態時間是如何統計的，找到 account_system_time 的程式碼。
 
+```
+//file:kernel/sched/cputime.c
+void account_system_time(struct task_struct *p, int hardirq_offset, u64 cputime)
+{
+    if (hardirq_count() - hardirq_offset)
+        index = CPUTIME_IRQ;
+    else if (in_serving_softirq())
+        index = CPUTIME_SOFTIRQ;
+    else
+        index = CPUTIME_SYSTEM;
+
+    account_system_index_time(p, cputime, index);
+}
+```
+
 核心態的時間主要分 3 種情況進行統計。
 
-如果當前處於硬中斷執行上下文, 那麼統計到 irq 欄位中
+- 如果當前處於硬中斷執行上下文, 那麼統計到 irq 欄位中
 
-如果當前處於軟中斷執行上下文, 那麼統計到 softirq 欄位中
+- 如果當前處於軟中斷執行上下文, 那麼統計到 softirq 欄位中
 
-否則統計到 system 欄位中
+- 否則統計到 system 欄位中
 
 判斷好要加到哪個統計項中後，依次呼叫 account_system_index_time、task_group_account_field 來將這段時間加到核心變數 kernel_cpustat 中
 
-3.3 空閒時間的累積
+```
+//file:kernel/sched/cputime.c
+static inline void task_group_account_field(struct task_struct *p, int index,
+                        u64 tmp)
+{
+    __this_cpu_add(kernel_cpustat.cpustat[index], tmp);
+}
+```
+
+#### 3.3 空閒時間的累積
 
 沒錯，在核心變數 kernel_cpustat 中不僅僅是統計了各種使用者態、核心態的使用統計，空閒也一併統計起來了。
 
 如果在取樣的瞬間，cpu 既不在核心態也不在使用者態的話，就將當前節拍的時間都累加到 idle 中。
 
+```
+//file:kernel/sched/cputime.c
+void account_idle_time(u64 cputime)
+{
+    u64 *cpustat = kcpustat_this_cpu->cpustat;
+    struct rq *rq = this_rq();
+
+    if (atomic_read(&rq->nr_iowait) > 0)
+        cpustat[CPUTIME_IOWAIT] += cputime;
+    else
+        cpustat[CPUTIME_IDLE] += cputime;
+}
+```
+
 在 cpu 空閒的情況下，進一步判斷當前是不是在等待 IO（例如磁碟 IO），如果是的話這段空閒時間會加到 iowait 中，否則就加到 idle 中。從這裡，我們可以看到 iowait 其實是 cpu 的空閒時間，只不過是在等待 IO 完成而已。
 
 看到這裡，開篇問題 3 也有非常明確的答案了，io wait 其實是 cpu 在空閒狀態的一項統計，只不過這種狀態和 idle 的區別是 cpu 是因為等待 io 而空閒。
 
-四、總結
+### 四、總結
 
 本文深入分析了 Linux 統計系統 CPU 利用率的內部原理。全文的內容可以用如下一張圖來彙總：
 
@@ -171,19 +327,23 @@ top 命令是讀取的 /proc/stat 中輸出的 cpu 各項利用率資料，而�
 
 我也提供了一個簡單的 shell 程式碼，你可以把它下載下來，用它來實際檢視一下你伺服器的 cpu 利用率，我放到我的 github 上了。
 
-Github 地址： https://github.com/yanfeizhang/coder-kung-fu/blob/main/tests/cpu/test06/cpu_stat.sh
+Github 地址：[https://github.com/yanfeizhang/coder-kung-fu/blob/main/tests/cpu/test06/cpu_stat.sh](https://github.com/yanfeizhang/coder-kung-fu/blob/main/tests/cpu/test06/cpu_stat.sh)
 
 再說是否精確。這個統計方法是取樣的，只要是取樣，肯定就不是百分之百精確。但由於我們檢視 cpu 使用率的時候往往都是計算 1 秒甚至更長一段時間的使用情況，這其中會包含很多采樣點，所以檢視整體情況是問題不大的。
 
-另外從本文，我們也學到了 top 中輸出的 cpu 時間專案其實大致可以分為三類 第一類：使用者態消耗時間，包括 user 和 nice。如果想看使用者態的消耗，要將 user 和 nice 加起來看才對。 第二類：核心態消耗時間，包括 irq、softirq 和 system。 第三類：空閒時間，包括 io_wait 和 idle。其中 io_wait 也是 cpu 的空閒狀態，只不過是在等 io 完成而已。如果只是想看 cpu 到底有多閒，應該把 io_wait 和 idle 加起來才對。
+另外從本文，我們也學到了 top 中輸出的 cpu 時間專案其實大致可以分為三類
+第一類：使用者態消耗時間，包括 user 和 nice。如果想看使用者態的消耗，要將 user 和 nice 加起來看才對。
+第二類：核心態消耗時間，包括 irq、softirq 和 system。
+第三類：空閒時間，包括 io_wait 和 idle。其中 io_wait 也是 cpu 的空閒狀態，只不過是在等 io 完成而已。如果只是想看 cpu 到底有多閒，應該把 io_wait 和 idle 加起來才對。
 
 最後，求轉發~
 
-Linux系統排程之時間
+- [Linux系統排程之時間](https://www.cnblogs.com/sky-heaven/p/16458715.html)
 
 更多幹貨內容，詳見：
 
-Github： https://github.com/yanfeizhang/coder-kung-fu 關注公眾號：微信掃描下方二維碼
+Github：[https://github.com/yanfeizhang/coder-kung-fu](https://github.com/yanfeizhang/coder-kung-fu)
+關注公眾號：微信掃描下方二維碼
 
 我打造了一套更為完整的影片課程。總共包括了硬體原理、記憶體管理、程序管理、網路管理、檔案系統、容器原理、效能觀測、效能最佳化、呼叫原理、等幾個大部分的內容。
 

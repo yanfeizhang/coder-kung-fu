@@ -5,23 +5,23 @@ title: "文章列表"
 
 # 文章列表（繁體中文 / 台灣用語）
 
-- [NVIDIA通用計算首代架構 Tesla 與 CUDA 1.0 剖析](./001-nvidia通用計算首代架構-tesla-與-cuda-1-0-剖析.md)
-- [《聊聊英偉達於2010年釋出的第一個完整 GPU 計算架構！》](./002-聊聊英偉達於2010年釋出的第一個完整-gpu-計算架構.md)
-- [你以為你的多核CPU都是真核嗎？多核“假象”](./003-你以為你的多核cpu都是真核嗎-多核-假象.md)
-- [聽說你只知記憶體，而不知快取？CPU表示很傷心！](./004-聽說你只知記憶體-而不知快取-cpu表示很傷心.md)
-- [TLB快取是個神馬鬼，如何檢視TLB miss？](./005-tlb快取是個神馬鬼-如何檢視tlb-miss.md)
-- [深入瞭解 CPU 的型號、代際架構與微架構](./006-深入瞭解-cpu-的型號-代際架構與微架構.md)
-- [聊聊近些年 CPU 在微架構、IO 速率上的演進過程](./007-聊聊近些年-cpu-在微架構-io-速率上的演進過程.md)
-- [深入瞭解伺服器 CPU 的型號、代際、片內與片間互聯架構](./008-深入瞭解伺服器-cpu-的型號-代際-片內與片間互聯架構.md)
-- [個人電腦上CPU和伺服器上的CPU都有哪些區別？](./009-個人電腦上cpu和伺服器上的cpu都有哪些區別.md)
-- [帶你深入理解記憶體對齊最底層原理](./010-帶你深入理解記憶體對齊最底層原理.md)
-- [記憶體隨機也比順序訪問慢，帶你深入理解記憶體IO過程](./011-記憶體隨機也比順序訪問慢-帶你深入理解記憶體io過程.md)
-- [從DDR到DDR4，記憶體核心頻率其實基本上就沒太大的進步](./012-從ddr到ddr4-記憶體核心頻率其實基本上就沒太大的進步.md)
-- [看懂伺服器 CPU 記憶體支援，學會計算記憶體頻寬](./013-看懂伺服器-cpu-記憶體支援-學會計算記憶體頻寬.md)
-- [為什麼伺服器記憶體硬體上的黑色顆粒這麼多？](./014-為什麼伺服器記憶體硬體上的黑色顆粒這麼多.md)
-- [理解記憶體的Rank、位寬以及記憶體顆粒內部結構](./015-理解記憶體的rank-位寬以及記憶體顆粒內部結構.md)
-- [伺服器之 ECC 記憶體的工作原理](./016-伺服器之-ecc-記憶體的工作原理.md)
-- [Linux 下用 dmidecode 探秘伺服器記憶體硬體](./017-linux-下用-dmidecode-探秘伺服器記憶體硬體.md)
+- [你以為你的多核CPU都是真核嗎？多核“假象”](./001-你以為你的多核cpu都是真核嗎-多核-假象.md)
+- [聽說你只知記憶體，而不知快取？CPU表示很傷心！](./002-聽說你只知記憶體-而不知快取-cpu表示很傷心.md)
+- [TLB快取是個神馬鬼，如何檢視TLB miss？](./003-tlb快取是個神馬鬼-如何檢視tlb-miss.md)
+- [深入瞭解 CPU 的型號、代際架構與微架構](./004-深入瞭解-cpu-的型號-代際架構與微架構.md)
+- [聊聊近些年 CPU 在微架構、IO 速率上的演進過程](./005-聊聊近些年-cpu-在微架構-io-速率上的演進過程.md)
+- [深入瞭解伺服器 CPU 的型號、代際、片內與片間互聯架構](./006-深入瞭解伺服器-cpu-的型號-代際-片內與片間互聯架構.md)
+- [個人電腦上CPU和伺服器上的CPU都有哪些區別？](./007-個人電腦上cpu和伺服器上的cpu都有哪些區別.md)
+- [帶你深入理解記憶體對齊最底層原理](./008-帶你深入理解記憶體對齊最底層原理.md)
+- [記憶體隨機也比順序訪問慢，帶你深入理解記憶體IO過程](./009-記憶體隨機也比順序訪問慢-帶你深入理解記憶體io過程.md)
+- [從DDR到DDR4，記憶體核心頻率其實基本上就沒太大的進步](./010-從ddr到ddr4-記憶體核心頻率其實基本上就沒太大的進步.md)
+- [看懂伺服器 CPU 記憶體支援，學會計算記憶體頻寬](./011-看懂伺服器-cpu-記憶體支援-學會計算記憶體頻寬.md)
+- [為什麼伺服器記憶體硬體上的黑色顆粒這麼多？](./012-為什麼伺服器記憶體硬體上的黑色顆粒這麼多.md)
+- [理解記憶體的Rank、位寬以及記憶體顆粒內部結構](./013-理解記憶體的rank-位寬以及記憶體顆粒內部結構.md)
+- [伺服器之 ECC 記憶體的工作原理](./014-伺服器之-ecc-記憶體的工作原理.md)
+- [Linux 下用 dmidecode 探秘伺服器記憶體硬體](./015-linux-下用-dmidecode-探秘伺服器記憶體硬體.md)
+- [NVIDIA通用計算首代架構 Tesla 與 CUDA 1.0 剖析](./016-nvidia通用計算首代架構-tesla-與-cuda-1-0-剖析.md)
+- [《聊聊英偉達於2010年釋出的第一個完整 GPU 計算架構！》](./017-聊聊英偉達於2010年釋出的第一個完整-gpu-計算架構.md)
 - [磁碟開篇：扒開機械硬碟堅硬的外衣！](./018-磁碟開篇-扒開機械硬碟堅硬的外衣.md)
 - [磁碟分割槽也是隱含了技術技巧的](./019-磁碟分割槽也是隱含了技術技巧的.md)
 - [怎麼解決機械硬碟既慢又容易壞的問題？](./020-怎麼解決機械硬碟既慢又容易壞的問題.md)
@@ -116,35 +116,3 @@ title: "文章列表"
 - [寫給內功修煉讀者的一封信!](./109-寫給內功修煉讀者的一封信.md)
 - [我是怎麼樣寫出開發內功修煉的？秘密都在這裡！](./110-我是怎麼樣寫出開發內功修煉的-秘密都在這裡.md)
 - [給想成長為高階別開發同學的七條建議](./111-給想成長為高階別開發同學的七條建議.md)
-
-## 抓取失敗
-
-- https://mp.weixin.qq.com/s/Z2SRfXAcYtpu0G4-_V9a7Q：No article content extracted; source blocked; mirrors failed: https://www.51cto.com/article/823859.html: No article content extracted; https://blog.csdn.net/zhangyanfei01/article/details/150914012: 521 Server Error:  for url: https://blog.csdn.net/zhangyanfei01/article/details/150914012; https://blog.csdn.net/zhangyanfei01/article/details/157683385: 521 Server Error:  for url: https://blog.csdn.net/zhangyanfei01/article/details/157683385
-- https://mp.weixin.qq.com/s/VY7Fj2X3rYg0S3gy5Hvi8A：No article content extracted; source blocked; mirrors failed: https://zhuanlan.zhihu.com/p/684293600: 403 Client Error: Forbidden for url: https://zhuanlan.zhihu.com/p/684293600; https://blog.csdn.net/xtyly1/article/details/105309999: 521 Server Error:  for url: https://blog.csdn.net/xtyly1/article/details/105309999; https://cloud.tencent.com/developer/article/2303978: No article content extracted
-- https://mp.weixin.qq.com/s/fIQyEtOIOoQF32avBekHLw：No article content extracted; source blocked; mirrors failed: https://blog.csdn.net/weixin_30899023/article/details/161466102: 521 Server Error:  for url: https://blog.csdn.net/weixin_30899023/article/details/161466102; https://blog.csdn.net/weixin_32006655/article/details/161466097: 521 Server Error:  for url: https://blog.csdn.net/weixin_32006655/article/details/161466097; https://www.cnblogs.com/leehang/p/19046076: mirror title mismatch: expected 'Linux 下用 dmidecode 探秘服务器内存硬件', got 'Linux 系统 dmidecode命令详解'
-- https://mp.weixin.qq.com/s/6aPHMmz1kmiaBABhy8pF1Q：No article content extracted; source blocked; mirrors failed: https://zhuanlan.zhihu.com/p/130194556: 403 Client Error: Forbidden for url: https://zhuanlan.zhihu.com/p/130194556; https://zhuanlan.zhihu.com/p/1911788068081468372: 403 Client Error: Forbidden for url: https://zhuanlan.zhihu.com/p/1911788068081468372; https://cloud.tencent.com/developer/article/1964453: No article content extracted
-- https://mp.weixin.qq.com/s/jZm9CbPayhAlKaptbkppnQ：No article content extracted; source blocked; no usable public mirror found
-- https://mp.weixin.qq.com/s/MSlvaSmX2NQIzK10jjLXZg：No article content extracted; source blocked; no usable public mirror found
-- https://mp.weixin.qq.com/s/fOIkkOOnDi7tll2p7DKPkg：No article content extracted; source blocked; no usable public mirror found
-- https://mp.weixin.qq.com/s/fHzKYlW0WMhP2jxh2H_59A：No article content extracted; source blocked; no usable public mirror found
-- https://mp.weixin.qq.com/s/SYCUMvzktgeGbyAfRdqhmg：No article content extracted; source blocked; no usable public mirror found
-- https://mp.weixin.qq.com/s/ta6upubg0o1w03YGUo8Trg：No article content extracted; source blocked; mirrors failed: http://kfngxl.cn/index.php/archives/395/: 503 Server Error: Service Unavailable for url: http://kfngxl.cn/index.php/archives/395/; http://kfngxl.cn/index.php/archives/395/: 503 Server Error: Service Unavailable for url: http://kfngxl.cn/index.php/archives/395/; http://kfngxl.cn/index.php/archives/395/: 503 Server Error: Service Unavailable for url: http://kfngxl.cn/index.php/archives/395/
-- https://mp.weixin.qq.com/s/9YeUEnRnegplftpKlW4ZCA：No article content extracted; source blocked; no usable public mirror found
-- https://mp.weixin.qq.com/s/WE6BodR_q0GSKks_TgYL1w：No article content extracted; source blocked; no usable public mirror found
-- https://mp.weixin.qq.com/s/g-fFoYsBJkonV3ezdGDJKA：No article content extracted; source blocked; no usable public mirror found
-- https://mp.weixin.qq.com/s/DobymgQ-TRXrO32wjf2fWQ：No article content extracted; source blocked; no usable public mirror found
-- https://mp.weixin.qq.com/s/vekemOfUHBjZSy3uXb49Rw：No article content extracted; source blocked; no usable public mirror found
-- https://zhuanlan.zhihu.com/p/142441899：403 Client Error: Forbidden for url: https://zhuanlan.zhihu.com/p/142441899; source blocked; no usable public mirror found
-- https://mp.weixin.qq.com/s/qz57uPtFaoQ_5z59NSBEUQ：No article content extracted; source blocked; no usable public mirror found
-- https://mp.weixin.qq.com/s/4CKPLpEDDbIyqJGxYDAUeA：No article content extracted; source blocked; no usable public mirror found
-- https://mp.weixin.qq.com/s/JnKz1fUgZmGdvfxOm2ehZg：No article content extracted; source blocked; no usable public mirror found
-- https://mp.weixin.qq.com/s/lscMpc5BWAEzjgYw6H0wBw：No article content extracted; source blocked; no usable public mirror found
-- https://mp.weixin.qq.com/s/Arcz3RWe_o0Ijw6uPWKdVw：No article content extracted; source blocked; no usable public mirror found
-- https://mp.weixin.qq.com/s/0EZCmABsMEV3TFVmDZmzZA：No article content extracted; source blocked; no usable public mirror found
-- https://mp.weixin.qq.com/s/clILKrOO7_XJs6uHp5hoUw：No article content extracted; source blocked; no usable public mirror found
-- https://mp.weixin.qq.com/s/-WA6J9BZeZJIQTZtDHD5hA：No article content extracted; source blocked; no usable public mirror found
-- https://mp.weixin.qq.com/s/OQyGEi0rvJRS0HJstaPWKQ：No article content extracted; source blocked; no usable public mirror found
-- https://mp.weixin.qq.com/s/5f7x60bNCNK2a5nz8FL5yg：No article content extracted; source blocked; no usable public mirror found
-- https://mp.weixin.qq.com/s/Pzo46nZtSlsv_M6Tq7pv_A：No article content extracted; source blocked; no usable public mirror found
-- https://mp.weixin.qq.com/s/rUWqVtoP3_f0M6ltN_1gqA：No article content extracted; source blocked; no usable public mirror found
-- https://mp.weixin.qq.com/s/8lMGzBzXine-NAsqEaIE4g：No article content extracted; source blocked; no usable public mirror found

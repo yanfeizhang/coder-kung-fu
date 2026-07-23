@@ -19,7 +19,7 @@ title: "為什麼新版核心將程序pid管理從bitmap替換成了radix-tree�
 
 所以今天我來給大家聊聊為什麼 Linux 核心要將 bitmap 替換成基數樹，最後也看看這次替換的效能效果。
 
-一、舊的 bitmap 方式管理 pid
+### 一、舊的 bitmap 方式管理 pid
 
 核心需要為每一個程序/執行緒都分配一個程序號。
 
@@ -33,17 +33,72 @@ bitmap 可以極大地壓縮整數的儲存。如果使用 bitmap 來儲存使�
 
 核心中建立程序時申請 pid 的核心函式是 alloc_pid。在 3.10 版本中的時候，分配 pid 呼叫 pidmap 的介面函式 alloc_pidmap 來完成。它的原始碼是下面這個樣子的：
 
+```
+//file:kernel/pid.c
+struct pid *alloc_pid(struct pid_namespace *ns)
+{
+    ...
+
+    // 程序可能歸屬多個名稱空間，在每一個命令空間中都需要分配程序號
+    // 實際呼叫 alloc_pidmap 來申請整數型別的程序號
+    tmp = ns;
+    pid->level = ns->level;
+    for (i = ns->level; i >= 0; i--) {
+        nr = alloc_pidmap(tmp);
+        pid->numbers[i].nr = nr;
+        ...
+    }
+    ...
+    return pid
+}
+```
+
 如前面所述，bitmap 的最大好處是節約記憶體。但其也有個比較大的缺點，分配一個新的 pid 時的計算複雜度比較高。如果在程序數量比較多的，幾乎需要把整個 bitmap 中的每一個 bit 位都遍歷一遍才行。
+
+```
+// file:kernel/pid.c
+static int alloc_pidmap(struct pid_namespace *pid_ns)
+{
+    ...
+    map = &pid_ns->pidmap[pid/BITS_PER_PAGE];
+    for (i = 0; i <= max_scan; ++i) {
+        for ( ; ; ) {
+            if (!test_and_set_bit(offset, map->page)) {
+                atomic_dec(&map->nr_free);
+                set_last_pid(pid_ns, last, pid);
+                return pid;
+            }
+            offset = find_next_offset(map, offset);
+            pid = mk_pid(pid_ns, map, offset);
+            ...
+        }
+        ...
+    }
+}
+```
 
 在最近幾年的業界發展中，伺服器的記憶體越來越大，伺服器上幾百 GB 的記憶體都很常見。另外隨著這幾年輕量化容器雲的發展，伺服器上執行的程序數越來越多。傳統的基於 bitmap 來管理分配的 pid 的節約記憶體的優勢越來越顯得沒有價值，而它分配新 pid 時佔用的 CPU 資源較高這一缺點越來越明顯。
 
-二、使用基數樹管理 pid
+### 二、使用基數樹管理 pid
 
-在 2017 年的時候，Gargi Sharma 提交了一個名為 “Replace PID bitmap allocation with IDR AP” 的 patch，在這個提交裡 bitmap 被開始替換成了基數樹。並最終被併入到了 Linux 4.15 的版本中。關於這個提交的詳情參見 https://lwn.net/Articles/735675/ 或 https://lore.kernel.org/lkml/f5104f457ed581e0ac032a68af03c5ba5cb94755.1506342921.git.gs051095@gmail.com/
+在 2017 年的時候，Gargi Sharma 提交了一個名為 “Replace PID bitmap allocation with IDR AP” 的 patch，在這個提交裡 bitmap 被開始替換成了基數樹。並最終被併入到了 Linux 4.15 的版本中。關於這個提交的詳情參見[https://lwn.net/Articles/735675/](https://lwn.net/Articles/735675/)或[https://lore.kernel.org/lkml/f5104f457ed581e0ac032a68af03c5ba5cb94755.1506342921.git.gs051095@gmail.com/](https://lore.kernel.org/lkml/f5104f457ed581e0ac032a68af03c5ba5cb94755.1506342921.git.gs051095@gmail.com/)
 
 樹相關的資料結構是變體最多的，基數樹就是樹資料結構的其中一種。它有最明顯的特點是它的每一層只管理一個 6 bit 的分段。所以它的分叉數基本是固定的 64（2^6=64）（根節點除外），層數也是固定的。
 
 基數樹節點的資料結構定義中，有幾個非常重要的欄位，分別是 shift、slots 和 tags。
+
+```
+//file:include/linux/xarray.h
+struct xa_node {
+    ...
+    unsigned char    shift;
+    void __rcu    *slots[XA_CHUNK_SIZE];
+    union {
+        unsigned long    tags[XA_MAX_MARKS][XA_MARK_LONGS];
+        ...
+    };
+}
+```
 
 shift 表示了自己在數字中表示第幾段數字。在Linux 中預設的基數大小為 6。這種情況下最低一層的內部節點，shift 為 0，倒數第二層 shift 為 6。 再上一層節點的 shift 為 12。以此類推，shift 從低往高， 逐層遞增 6。
 
@@ -53,19 +108,21 @@ tags 用來記錄 slog 陣列中每一個下標的儲存狀態。其中每個樹
 
 上面的過程描述有點抽象。為了更好地理解，我們再使用一個簡單的例子來看一下基數樹在記憶體中的樣子。
 
+> 核心中的基數樹是用於管理 32 bit 位的 整數 ID 的，但為了舉例更簡單清晰，我們用 16 bit 的整陣列成的基數樹來舉例。
+
 16 bit 的無符號整數的表示範圍是 0 - 65536。假設有一個有已經分配出去的 100、1000、10000、50000、60000 的整數 ID。我們把這幾個陣列來組成的基數樹。
 
 首先把上述各個整數的二進位制形式轉化出來如下，
 
-100: 0000,000001,100100
+- 100: 0000,000001,100100
 
-1000: 0000,001111,101000
+- 1000: 0000,001111,101000
 
-10000: 0010,011100,010000
+- 10000: 0010,011100,010000
 
-50000: 1100,001101,010000
+- 50000: 1100,001101,010000
 
-60000: 1110,101001,100000
+- 60000: 1110,101001,100000
 
 在表示方式上，從尾部開始，按照 6 bit 為一組來表示。這樣，每一個 16 bit 位的數字可以拆分表示為一個三段的數字。
 
@@ -75,19 +132,19 @@ tags 用來記錄 slog 陣列中每一個下標的儲存狀態。其中每個樹
 
 再下面一層節點的 slot 下標是每個值中間 6 個 bit 位的值，其 shift 為 6。第一層樹的節點的 slot 是每個值最後 6 個 bit 的值，其 shift 為 0。 我們再將上述每一個整數按照 6 bit 為分段，表示成 10 進位制如下：
 
-100: 0,1,36
+- 100: 0,1,36
 
-1000: 0,15,40
+- 1000: 0,15,40
 
-10000: 2,28,16
+- 10000: 2,28,16
 
-50000: 12,13,16
+- 50000: 12,13,16
 
-60000: 14,41,32
+- 60000: 14,41,32
 
 那麼 100、1000、10000、50000、60000 這幾個陣列成的基數樹的結構如下圖所示。
 
-拿整數 100 舉例，按每 6 bit 一段分表示後為  0, 1, 36。其第一段是 0 ，那就在基數樹的根節點的 slots 的 0 號下標儲存其子節點指標。其第 2 分段為 1 ，那就在其第二層節點的 slots 的 1 號下標儲存其子節點指標。在第三層節點的 slots 的 36 號下標儲存最終的值 100。
+拿整數 100 舉例，按每 6 bit 一段分表示後為 0, 1, 36。其第一段是 0 ，那就在基數樹的根節點的 slots 的 0 號下標儲存其子節點指標。其第 2 分段為 1 ，那就在其第二層節點的 slots 的 1 號下標儲存其子節點指標。在第三層節點的 slots 的 36 號下標儲存最終的值 100。
 
 基數樹就這樣建立好了。
 
@@ -97,19 +154,77 @@ tags 用來記錄 slog 陣列中每一個下標的儲存狀態。其中每個樹
 
 使用了基數樹後，核心原始碼也就發生了變化。在比較新的 6.1 版本的核心中，alloc_pid 變成了下面這個樣子，透過呼叫 idr_alloc 來申請一個未使用過的程序 ID 出來。
 
+```
+//file:kernel/pid.c
+struct pid *alloc_pid(struct pid_namespace *ns, ...)
+{
+    ...
+
+    // 程序可能歸屬多個名稱空間，在每一個命令空間中都需要分配程序號
+    // 實際呼叫 idr_alloc 來申請整數型別的程序號
+    tmp = ns;
+    pid->level = ns->level;
+    for (i = ns->level; i >= 0; i--) {
+        nr = idr_alloc(&tmp->idr, NULL, tid,
+                             tid + 1, GFP_ATOMIC);
+        ...
+        pid->numbers[i].nr = nr;
+        pid->numbers[i].ns = tmp;
+        tmp = tmp->parent;
+    }
+    ...
+}
+```
+
 其申請的核心過程是 idr_get_free，主要就是遍歷這顆基數樹的若干節點，並根據每個節點的 tag、slot 等欄位找出還未被佔用的整數 ID。
 
-三、基數樹的效能效果
+```
+//file:lib/radix-tree.c
+void __rcu **idr_get_free(struct radix_tree_root *root, ...)
+{
+    ...
+    shift = radix_tree_load_root(root, &child, &maxindex);
+    while (shift) {
+        shift -= RADIX_TREE_MAP_SHIFT; //RADIX_TREE_MAP_SHIFT為6
+        ...
 
-原理我們講完了，我們再來看下使用基數樹替代 bitmap 後的效能表現如何。這裡我們直接引用該 patch 的提交者 Gargi Sharma 提供的實驗資料。 來自 https://lwn.net/Articles/735675/ 。
+        // 遍歷 tag 狀態 bitmap，尋找下一個可用的下標
+        offset = radix_tree_find_next_bit(node, IDR_FREE,
+                            offset + 1);
+        start = next_index(start, node, offset);
+    }
+    ...
+}
+```
+
+### 三、基數樹的效能效果
+
+原理我們講完了，我們再來看下使用基數樹替代 bitmap 後的效能表現如何。這裡我們直接引用該 patch 的提交者 Gargi Sharma 提供的實驗資料。 來自[https://lwn.net/Articles/735675/](https://lwn.net/Articles/735675/)。
 
 Gargi Sharma 在 10000 個程序的情況下分別統計了 ps、pstree 的耗時情況。
+
+```
+ps:
+    With IDR API    With bitmap
+real    0m1.479s    0m2.319s
+user    0m0.070s    0m0.060s
+sys    0m0.289s    0m0.516s
+```
+
+```
+pstree:
+    With IDR API    With bitmap
+real    0m1.024s    0m1.794s
+user    0m0.348s    0m0.612s
+sys    0m0.184s    0m0.264s
+```
 
 可見，在使用了基數樹後，ps 和 pstree 命令的耗時都縮短了不少，效能大約提升了有 50%
 
 更多幹貨內容，詳見：
 
-Github： https://github.com/yanfeizhang/coder-kung-fu 關注公眾號：微信掃描下方二維碼
+Github：[https://github.com/yanfeizhang/coder-kung-fu](https://github.com/yanfeizhang/coder-kung-fu)
+關注公眾號：微信掃描下方二維碼
 
 我打造了一套更為完整的影片課程。總共包括了硬體原理、記憶體管理、程序管理、網路管理、檔案系統、容器原理、效能觀測、效能最佳化、呼叫原理、等幾個大部分的內容。
 
