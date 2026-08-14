@@ -1,3 +1,0 @@
-beautifulsoup4==4.12.3
-opencc-python-reimplemented==0.1.7
-requests==2.32.3

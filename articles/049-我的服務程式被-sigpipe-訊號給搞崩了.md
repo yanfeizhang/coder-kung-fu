@@ -1,31 +1,31 @@
 ---
 layout: default
-title: "我的服務程式被 SIGPIPE 訊號給搞崩了！"
+title: "我的服務程式因 SIGPIPE 訊號而崩潰了！"
 ---
 
-# 我的服務程式被 SIGPIPE 訊號給搞崩了！
+# 我的服務程式因 SIGPIPE 訊號而崩潰了！
 
 > 原文標題：我的服务程序被 SIGPIPE 信号给搞崩了！
 
-> 原文連結：http://kfngxl.cn/index.php/archives/857/
+> 原文連結：https://mp.weixin.qq.com/s/WpYW0E_b-8ktsFBpiR_ZzQ
 
 ---
 
 大家好，我是飛哥!
 
-就在前幾天，我們在灰度上線時遇到了一個服務程式閃退的問題。最後排查的結果是因為一個小小的網路 SIGPIPE 訊號導致的這個嚴重問題。
+就在前幾天，我們在灰度上線時遇到了一個服務程式閃退的問題。最後排查的結果是因為一個小小的網路 (Network) SIGPIPE 訊號導致的這個嚴重問題。
 
-今天，我就用一篇文章來介紹下 SIGPIPE 訊號是如何發生的、為啥該訊號會導致程序的閃退、為什麼 Go 語言大部分情況下沒有這個問題。
+今天，我就用一篇文章來介紹下 SIGPIPE 訊號是如何發生的、為什麼該訊號會導致程序 (Process) 的閃退、為什麼 Go 語言大部分情況下沒有這個問題。
 
 讓我們開啟今天的核心原理學習之旅！
 
-### 故障背景
+## 故障背景
 
 我們對某個核心 Go 服務進行了 Rust 重構。由於原始碼太多，全部重構又不太現實。所以我們採用的方案是將部分程式碼用 Rust 重構掉。在服務程序中，Go 和 Rust 透過 cgo 進行通訊。
 
 但該新服務線上上遇到了崩潰的問題。而且崩潰還不是因為它自己，而是它依賴的一個業務程序熱升級的時候出現的。只要對該依賴熱升級，就會導致該新服務崩潰退出，進而導致線上 SLA 出現較為嚴重的下降。
 
-好在是灰度階段，影響不大。當時臨時禁止熱升級後規避了這個問題。但服務程序有機率崩潰終究可不是小事，萬一哪天誰不知道，一把線上梭哈升級那可就完犢子了。於是我立即停下了所有手頭的工作，幫大夥兒開始排查這個問題。
+好在是灰度階段，影響不大。當時臨時禁止熱升級後規避了這個問題。但服務程序有機率崩潰終究可不是小事，萬一哪天誰不知道，一把線上梭哈升級那可就出問題了。於是我立即停下了所有手頭的工作，幫大夥兒開始排查這個問題。
 
 遇到這種問題，大家第一反應是看日誌。但不幸的是在業務日誌中沒有找到任何線索。然後我的思路是找 coredump 檔案單步除錯一下，看看崩潰發生在程式碼的哪一行，結果發現這次崩潰連 core 檔案都沒有留下，悄無聲息的就消失了。
 
@@ -36,23 +36,21 @@ title: "我的服務程式被 SIGPIPE 訊號給搞崩了！"
 接下來的文章我分三大部分給大家講解：
 
 - SIGPIPE 訊號是如何發生的，帶大家看看為什麼連線異常會導致 SIGPIPE 的發生
-
 - 核心 SIGPIPE 訊號處理流程，帶大家看看為什麼核心預設遇到 SIGPIPE 時會將應用給殺死
-
 - 應用層該如何應對 SIGPIPE，帶大家看語言執行時以及我們自己的程式如何規避該問題
 
-### 一、SIGPIPE 訊號如何發生
+## 一、SIGPIPE 訊號如何發生
 
-在[《深入理解 Linux 網路》](https://item.jd.com/13163699.html)中我們介紹過，TCP 三次握手成功後會在核心中生成一個 socket 核心物件，透過該核心物件來表示一條 TCP 連線。
+在 [《深入理解 Linux 網路》](https://item.jd.com/13163699.html) 中我們介紹過，TCP 三次握手 (Three-Way Handshake) 成功後會在核心中產生一個 `socket` 核心物件，透過該核心物件來表示一條 TCP 連線。
 
-但核心物件是不允許我們隨便訪問的。我們平時在使用者態程式中看到的 socket 其實只是一個控制代碼而已，並不是真正的 socket 物件。
+但核心物件是不允許我們隨便存取的。我們平時在使用者態 (User Mode) 程式中看到的  `socket` 其實只是一個控制程式碼而已，並不是真正的 `socket` 物件。
 
-假如由於網路、對端重啟等問題這條 TCP 連線斷開了。此時我們的使用者態程式根本是不知情的。很有可能還會呼叫 send、write 等系統呼叫往 socket 裡面傳送資料。
+假如由於網路、對端重啟等問題這條 TCP 連線斷開了。此時我們的使用者態程式根本是不知情的。很有可能還會呼叫  `send`、 `write` 等系統呼叫 (System Call) 往 `socket` 裡面傳送資料。
 
-當資料包傳送過程走到核心中的時候，核心是知道這個 socket 已經斷開了的。就會給當前程序傳送一個 SIGPIPE 訊號。
+當資料封包傳送過程走到核心中的時候，核心是知道這個  `socket` 已經斷開了的。就會給當前程序傳送一個 SIGPIPE 訊號。
 
-我們來看下具體的原始碼。核心的傳送會走到 do_tcp_sendpages 函式，在這裡核心如果發現該 socket 已經
-在這種情況下，會呼叫 sk_stream_error 函式。
+我們來看下具體的原始碼。核心的傳送會走到  `do_tcp_sendpages` 函式，在這裡核心如果發現該 `socket` 已經
+在這種情況下，會呼叫 `sk_stream_error` 函式。
 
 ```
 //file:net/core/stream.c
@@ -68,25 +66,25 @@ out_err:
 }
 ```
 
-sk_stream_error 函式主要工作就是給正在 current（傳送資料的程序）傳送一個 SIGPIPE 訊號。
+`sk_stream_error` 函式主要工作就是給正在 current（傳送資料的程序）傳送一個 SIGPIPE 訊號。
 
 ```
 int sk_stream_error(struct sock *sk, int flags, int err)
 {
-    ......
-    if (err == -EPIPE && !(flags & MSG_NOSIGNAL))
-        send_sig(SIGPIPE, current, 0);
-    return err;
+......
+if (err == -EPIPE && !(flags & MSG_NOSIGNAL))
+send_sig(SIGPIPE, current, 0);
+return err;
 }
 ```
 
-### 二、核心 SIGPIPE 訊號處理流程
+## 二、核心 SIGPIPE 訊號處理流程
 
-上一節我們看到如果遇到網路連線異常斷開，核心會給當前程序傳送一個 SIGPIPE 訊號。那麼為啥這個訊號就能把服務程式給搞崩而且沒留下 coredump 檔案呢？
+上一節我們看到如果遇到網路連線異常斷開，核心會給當前程序傳送一個 SIGPIPE 訊號。那麼為什麼這個訊號就能讓服務程式崩潰而且沒留下 coredump 檔案呢？
 
-簡單來說，這是 Linux 核心對 SIGPIPE 訊號處理的預設行為。飛哥喝口水，接著給你說。
+簡單來說，這是 Linux 核心 (Linux Kernel) 對 SIGPIPE 訊號處理的預設行為。飛哥喝口水，接著給你說。
 
-目標程序每當從核心態返回使用者態的過程中，會檢測是否有掛起的訊號。如果有訊號存在，就會進入到訊號的處理過程中，會執行到 do_notify_resume，然後再進到核心函式 do_signal。我們直接把 do_signal 的原始碼翻出來。
+目標程序每當從核心態 (Kernel Mode) 回傳使用者態的過程中，會檢測是否有掛起的訊號。如果有訊號存在，就會進入到訊號的處理過程中，會執行到   `do_notify_resume`，然後再進到核心函式 `do_signal`。我們直接把 `do_signal` 的原始碼翻出來。
 
 ```
 //file:arch/x86/kernel/signal.c
@@ -103,13 +101,13 @@ static void do_signal(struct pt_regs *regs)
 }
 ```
 
-在 do_signal 主要包含 get_signal 和 handle_signal 兩個操作。
+在   `do_signal` 主要包含 `get_signal` 和 `handle_signal` 兩個操作。
 
-核心在 get_signal 中是獲取一個訊號。值得注意的是，核心獲取到訊號後，還會判斷訊號的關聯行為。如果發現這個訊號核心可以處理，核心直接就操作了。
+核心在 `get_signal` 中是取得一個訊號。值得注意的是，核心取得到訊號後，還會判斷訊號的關聯行為。如果發現這個訊號核心可以處理，核心直接就操作了。
 
-如果核心發現獲得到的訊號核心需要交接給使用者態程式處理，才會在 get_signal 函式中返回。接著再把訊號交給 handle_signal 函式，由該函式來為使用者空間準備好處理訊號的環境，進行後面的處理。
+如果核心發現獲得到的訊號核心需要交接給使用者態程式處理，才會在   `get_signal` 函式中回傳。接著再把訊號交給 `handle_signal` 函式，由該函式來為使用者空間準備好處理訊號的環境，進行後面的處理。
 
-服務程式在收到 SIGPIPE 會導致程序崩潰的關鍵就藏在這個 get_signal 函式里。
+服務程式在收到 SIGPIPE 會導致程序崩潰的關鍵就藏在這個 `get_signal` 函式里。
 
 ```
 //file:kernel/signal.c
@@ -123,13 +121,13 @@ bool get_signal(struct ksignal *ksig)
             signr = dequeue_signal(current, &current->blocked,
                        &ksig->info, &type);
 
-        // 2.判斷使用者程序是否為訊號配置了 handler
+        // 2.判斷使用者程序是否為訊號設定了 handler
         // 2.1 如果是 SIG_IGN(ignore的縮寫)，就跳過
         if (ka->sa.sa_handler == SIG_IGN)
             continue;
 
         // 2.3 判斷如果不是 SIG_DFL(default的縮寫)，
-        //     則證明使用者定義了處理函式，break 退出迴圈後返回訊號物件
+        //     則證明使用者定義了處理函式，break 退出迴圈後回傳訊號物件
         if (ka->sa.sa_handler != SIG_DFL) {
             ksig->ka = *ka;
             ...
@@ -145,17 +143,15 @@ out:
 }
 ```
 
-在 get_signal 函式里主要做了三件事。
+在   `get_signal` 函式里主要做了三件事。
 
-- 一是透過 dequeue_xxx 函式來獲取一個訊號
+- 一是透過 `dequeue_xxx` 函式來取得一個訊號
+- 二是判斷下使用者程序是否為訊號設定了 handler。如果使用者設定的是   `SIG_IGN` 直接跳過就行了，如果設定了處理函式，`get_signal` 就會將訊號回傳交給後面的流程交給使用者態程式執行。
+- 三是如果使用者沒設定 handler，則會進入到核心預設行為中。
 
-- 二是判斷下使用者程序是否為訊號配置了 handler。如果使用者配置的是 SIG_IGN 直接跳過就行了，如果配置了處理函式，get_signal 就會將訊號返回交給後面的流程交給使用者態程式執行。
+由於我們的服務程式沒對   `SIG_PIPE` 訊號配過任何處理邏輯，所以 `get_signal` 在遇到 `SIG_PIPE` 時會進入到第三步 -- 核心預設行為處理。
 
-- 三是如果使用者沒配置 handler，則會進入到核心預設行為中。
-
-由於我們的服務程式沒對 SIG_PIPE 訊號配過任何處理邏輯，所以 get_signal 在遇到 SIG_PIPE 時會進入到第三步 -- 核心預設行為處理。
-
-我們來繼續看看，核心的預設行為究竟是啥樣的。
+我們來繼續看看，核心的預設行為究竟是什麼樣的。
 
 ```
 //file:kernel/signal.c
@@ -166,7 +162,7 @@ bool get_signal(struct ksignal *ksig)
         // 1.取出訊號
         ......
 
-        // 2.判斷訊號是否配置了 handler
+        // 2.判斷訊號是否設定了 handler
         ......
 
         // 3.接下來就是核心的預設行為了
@@ -181,13 +177,13 @@ bool get_signal(struct ksignal *ksig)
 
         fatal:
         // 3.3 判斷是否需要 coredump
-        //     coredump 會殺死程序下的所有執行緒，並生成 coredump 檔案
+        //     coredump 會殺死程序下的所有執行緒，並產生 coredump 檔案
         if (sig_kernel_coredump(signr)) {
             do_coredump(&ksig->info);
         }
 
         // 3.4 對於非以上情形的訊號
-        //     直接讓程序下所有執行緒退出，並且不生成coredump
+        //     直接讓程序下所有執行緒退出，並且不產生coredump
         do_group_exit(ksig->info.si_signo);
     }
     ......
@@ -220,11 +216,11 @@ bool get_signal(struct ksignal *ksig)
     rt_sigmask(SIGTTIN)   |  rt_sigmask(SIGTTOU)   )
 ```
 
-第三種是需要終止程式執行，並生成 coredump 檔案的訊號。透過原始碼我們可以看到 SIGQUIT、SIGILL、SIGTRAP、SIGABRT、SIGABRT、SIGFPE、SIGSEGV、SIGBUS、SIGSYS、SIGXCPU、SIGXFSZ 這些訊號的預設行為走這個邏輯。
+第三種是需要終止程式執行，並產生 coredump 檔案的訊號。透過原始碼我們可以看到 SIGQUIT、SIGILL、SIGTRAP、SIGABRT、SIGABRT、SIGFPE、SIGSEGV、SIGBUS、SIGSYS、SIGXCPU、SIGXFSZ 這些訊號的預設行為走這個邏輯。
 
-我們以 SIGSEGV 為例，當應用程式試圖訪問空指標、陣列越界訪問等無效的記憶體操作時，核心會給當前程序傳送 SIGSEGV 訊號。
+我們以 SIGSEGV 為例，當應用程式試圖存取空指標、陣列越界存取等無效的記憶體 (Memory) 操作時，核心會給當前程序傳送 SIGSEGV 訊號。
 
-核心對於這些訊號的預設行為就是會呼叫 do_coredump 核心函式。這個函式會殺死目標程式所有執行緒的執行，並生成 coredump 檔案。
+核心對於這些訊號的預設行為就是會呼叫 `do_coredump` 核心函式。這個函式會殺死目標程式所有執行緒 (Thread) 的執行，並產生 coredump 檔案。
 
 我們線上遇到的絕大部分程式崩潰都是這一類。
 
@@ -242,44 +238,37 @@ bool get_signal(struct ksignal *ksig)
 
 但是看了這麼多訊號名了，還是找不到我們開篇提到的 SIGPIPE，好氣！！！
 
-最後仔細看完程式碼以後，發現對於非上面提到的訊號外，對於其它的所有訊號包括 SIGPIPE 的預設行為都是呼叫 do_group_exit。這個核心函式的行為也是殺死程序下的所有執行緒，但不生成 coredump 檔案！！！
+最後仔細看完程式碼以後，發現對於非上面提到的訊號外，對於其他的所有訊號包括 SIGPIPE 的預設行為都是呼叫 `do_group_exit`。這個核心函式的行為也是殺死程序下的所有執行緒，但不產生 coredump 檔案！！！
 
-### 三、應用層如何應對 SIGPIPE
+## 三、應用層如何應對 SIGPIPE
 
 看完前面兩節，我們徹底弄明白了為什麼我們的應用程式會崩潰了。
 
 事故大體邏輯是這樣的：
 
-- 1.服務依賴的程式熱升級的時候有連線異常斷開
-
-- 2.服務並不知道連線異常，還是正常向連線裡傳送資料
-
-- 3.核心在處理資料傳送時發現，該連線已經異常中斷了，直接給應用程式傳送一個 SIGPIPE 訊號
-
-- 4.服務程式會進入到訊號處理流程中
-
-- 5.由於應用程式未對 SIGPIPE 定義處理邏輯，所以走的是核心預設行為
-
-- 6.核心對於 SIGPIPE 的預設行為是終止程式執行，但不生成 coredump 檔案
+- 1. 服務依賴的程式熱升級的時候有連線異常斷開
+- 2. 服務並不知道連線異常，還是正常向連線裡傳送資料
+- 3. 核心在處理資料傳送時發現，該連線已經異常中斷了，直接給應用程式傳送一個 SIGPIPE 訊號
+- 4. 服務程式會進入到訊號處理流程中
+- 5. 由於應用程式未對 SIGPIPE 定義處理邏輯，所以走的是核心預設行為
+- 6. 核心對於 SIGPIPE 的預設行為是終止程式執行，但不產生 coredump 檔案
 
 弄懂了崩潰發生的原因，解決方法自然就明朗了。只需要在應用程式中定義對 SIGPIPE 的處理邏輯就行了。我在專案中增加了以下簡單的幾行程式碼。
 
-```
 // 設定 SIGPIPE 的訊號處理器為忽略
-let ignore_action = SigAction::new(
-    SigHandler::SigIgn, // SigIgn表示忽略訊號
-    signal::SaFlags::empty(),
-     SigSet::empty(),
+let `ignore_action` = `SigAction::new`(
+`SigHandler::SigIgn`, // SigIgn 表示忽略訊號
+`signal::SaFlags::empty`(),
+`SigSet::empty`(),
 );
 
 // 註冊訊號處理器
 unsafe {
-    signal::sigaction(Signal::SIGPIPE, &ignore_action)
-        .expect("Failed to set SIGPIPE handler to ignore");
+`signal::sigaction`(`Signal::SIGPIPE`, &`ignore_action`)
+.expect("Failed to set SIGPIPE handler to ignore");
 }
-```
 
-這樣就不會走到核心在處理 SIGPIPE 訊號時，在 get_signal 函式中發現使用者程序設定了 SIGPIPE 訊號的行為是 SIG_IGN，則就直接跳過，再也不會把程序殺死了。
+這樣就不會走到核心在處理 SIGPIPE 訊號時，在   `get_signal` 函式中發現使用者程序設定了 SIGPIPE 訊號的行為是 `SIG_IGN`，則就直接跳過，再也不會把程序殺死了。
 
 ```
 //file:kernel/signal.c
@@ -289,7 +278,7 @@ bool get_signal(struct ksignal *ksig)
     for (;;) {
         // 1.取出訊號
         ...
-        // 2.判斷使用者程序是否為訊號配置了 handler
+        // 2.判斷使用者程序是否為訊號設定了 handler
         // 2.1 如果是 SIG_IGN(ignore的縮寫)，就跳過
         if (ka->sa.sa_handler == SIG_IGN)
             continue;
@@ -300,67 +289,47 @@ bool get_signal(struct ksignal *ksig)
 }
 ```
 
-不少同學可能會好奇，為啥我的程序中從來沒處理過 SIGPIPE 訊號，咋就沒遇到過這種詭異的崩潰問題呢？
+不少同學可能會好奇，為什麼我的程序中從來沒處理過 SIGPIPE 訊號，怎麼就沒遇到過這種詭異的崩潰問題呢？
 
 原因是 Golang 等語言執行時會替我們做好這個設定。但我的開發場景是使用 Golang 作為宿主，又透過 cgo 呼叫了 Rust 的動態連結庫。而 Golang 並沒有針對這種場景做好處理。
 
-Golang 語言執行時的處理行為解釋參見 Go 原始碼的 os/signal/doc.go 檔案中的註釋。
+Golang 語言執行時的處理行為解釋參見 Go 原始碼的 `os/signal/doc.go` 檔案中的註釋。
 
-```
 If the program has not called Notify to receive SIGPIPE signals, then
-the behavior depends on the file descriptor number. A write to a
+the behavior depends on the file descriptor number. A `write` to a
 broken pipe on file descriptors 1 or 2 (standard output or standard
-error) will cause the program to exit with a SIGPIPE signal. A write
+error) will cause the program to exit with a SIGPIPE signal. A `write`
 to a broken pipe on some other file descriptor will take no action on
-the SIGPIPE signal, and the write will fail with an EPIPE error.
-```
+the SIGPIPE signal, and the `write` will fail with an EPIPE error.
 
 這段註釋清晰地說了 Go 語言執行時對於 SIGPIPE 訊號處理
 
 - 如果 fd 是 stdout、stderr，那麼程式收到 SIGPIPE 訊號，預設行為是程式會退出；
-
-- 如果是其他 fd（比如 TCP 連線），程式收到SIGPIPE訊號，不採取任何動作，返回一個EPIPE錯誤即可
+- 如果是其他 fd（例如 TCP 連線），程式收到 SIGPIPE 訊號，不採取任何動作，回傳一個 EPIPE 錯誤即可
 
 對於 cgo 場景，Go 的原始碼註釋中講了很多，我把其中最關鍵的一句摘出來
 
-```
 If the SIGPIPE is received on a non-Go thread the signal will
 be forwarded to the non-Go handler, if any; if there is none the
 default system handler will cause the program to terminate.
-```
 
 如果 SIGPIPE 是在非 go 執行緒上執行，那麼就取決於另一個語言執行時有沒有設定 handler 了。如果沒有設定，就會走到核心的預設行為中，導致程式終止。
 
 顯然我遇到的問題就讓註釋中這句話給說完了。
 
-### 總結
+## 總結
 
 好了，最後我們再總結一下。我們的應用程式會崩潰的原因是這樣的：
 
-- 1.服務依賴的程式熱升級的時候有連線異常斷開
+- 1. 服務依賴的程式熱升級的時候有連線異常斷開
+- 2. 服務並不知道連線異常，還是正常向連線裡傳送資料
+- 3. 核心在處理資料傳送時發現，該連線已經異常中斷了，直接給應用程式傳送一個 SIGPIPE 訊號
+- 4. 服務程式會進入到訊號處理流程中
+- 5. 由於應用程式未對 SIGPIPE 定義處理邏輯，所以走的是核心預設行為
+- 6. 核心對於 SIGPIPE 的預設行為是終止程式執行，但不產生 coredump 檔案
 
-- 2.服務並不知道連線異常，還是正常向連線裡傳送資料
-
-- 3.核心在處理資料傳送時發現，該連線已經異常中斷了，直接給應用程式傳送一個 SIGPIPE 訊號
-
-- 4.服務程式會進入到訊號處理流程中
-
-- 5.由於應用程式未對 SIGPIPE 定義處理邏輯，所以走的是核心預設行為
-
-- 6.核心對於 SIGPIPE 的預設行為是終止程式執行，但不生成 coredump 檔案
-
-Golang 為了避免網路斷連把程式搞崩在語言執行時中，設定了對非 0、1 檔案控制代碼的預設處理行為為忽略。但是對於我使用的 Go 在程序內透過 cgo 訪問 Rust 程式碼的情況並沒有很好地處理。
+Golang 為了避免網路斷連讓程式在語言執行時中崩潰，設定了對非 0、1 檔案控制程式碼的預設處理行為為忽略。但是對於我使用的 Go 在程序內透過 cgo 存取 Rust 程式碼的情況並沒有很好地處理。
 
 最終導致在 SIGPIPE 訊號發生時，進入到了核心的預設處理行為中，服務程式退出且不留 coredump。
 
-線上問題最難的地方在於定位根因，一但根因定位出來了，處理起來就簡單多了。最後我在 Rust 程式碼中配置了對 SIGPIPE 的處理行為為 SIGIGN 後問題就徹底搞定了！！
-
-我打造了一套更為完整的影片課程。總共包括了硬體原理、記憶體管理、程序管理、網路管理、檔案系統、容器原理、效能觀測、效能最佳化、呼叫原理、等幾個大部分的內容。
-
-其中有 5 個大部分已經更新完畢，下圖中彩色部分為已更新內容，總時長 1900 多分鐘。
-
-剩下各個大部分還在持續更新中。
-
-除了影片內容，星球裡我也給大家開放各種電子 PDF、PPT 的下載。
-
-目前我給大家仍然還開放 200 元的大額優惠券。加入後一年是 299 元。後期再續費目前是 6 折，也是 299。直接使用下方優惠券加入即可看上面的這些影片內容。
+線上問題最難的地方在於定位根因，一但根因定位出來了，處理起來就簡單多了。最後我在 Rust 程式碼中設定了對 SIGPIPE 的處理行為為 SIGIGN 後問題就徹底完成了！！
