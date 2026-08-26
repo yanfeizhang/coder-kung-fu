@@ -15,6 +15,8 @@
 **新文置顶:** 
 - [《NVIDIA通用计算首代架构 Tesla 与 CUDA 1.0 剖析》](https://mp.weixin.qq.com/s/q-SU_GCtqZi6OpnAIsINvQ)
 - [《聊聊英伟达于2010年发布的第一个完整 GPU 计算架构！》](https://mp.weixin.qq.com/s/Z2SRfXAcYtpu0G4-_V9a7Q)
+- [《英伟达 GPU 第三代 Kepler 架构的 3.9 TFLOPS 算力是如何炼成的？》](https://mp.weixin.qq.com/s/erAuqAZ3uRtQ3UyCkpSF5g)
+- [《10 年 20 倍增长！Maxwell 架构如何推动英伟达 GPU 算力进化》](https://mp.weixin.qq.com/s/IxUVSyBdia82tz4vDB1Ngw)
 
 ## 一、硬件原理篇
 **1.1 CPU 原理**
